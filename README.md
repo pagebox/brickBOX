@@ -10,8 +10,9 @@ Import-Module ps-bricks.psm1 -Force
 
 ## Functions
 
-**Start-Elevated** Executes a PowerShell script or command with elevated rights
-**Get-Secret** Reads and saves secure strings to hkcu in a secure way.
+**Start-Elevated** Executes a PowerShell script or command with elevated rights  
+**Get-Secret** Reads and saves secure strings to hkcu in a secure way.  
+**Set-IniContent** Add or Update key-value pairs in ini-files  
 
 
 ## Testing

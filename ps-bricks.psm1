@@ -76,3 +76,81 @@ Export-ModuleMember -Function Get-Secret
 #endregion
 
 
+#region "⚡ FileSystemObject"
+   
+<#
+.SYNOPSIS
+    Add or Update key-value pairs in ini-files
+.LINK
+    Specify a URI to a help page, this will show when Get-Help -Online is used.
+.EXAMPLE
+    $payload = Set-IniContent $payload 'color' 'red' 
+    sets the color=red in an ini-like content of $payload.
+#>
+function Set-IniContent {
+    param (
+        [Parameter(mandatory=$true)][System.Array]$payload,
+        [Parameter(mandatory=$true)][string]$key,
+        [Parameter(mandatory=$true)][string]$value,
+        [Parameter()][string]$section = "",
+        [switch]$uncomment = $false
+    )
+    
+    Process{
+        [String]$ini = ""
+        [String]$cSection = "" # Current Section
+        [bool]$hasSet = $false
+
+        foreach ($line in $payload.Split("`n")) {
+
+            if ($line -eq '') { $ini += "$line`n"; continue } # Skip empty line
+            
+            # Section
+            if ($line -match "^\[(?<section>.+)\]") {
+                if (!$hasSet -and ($cSection -eq $section)) { $ini += "$($Key)=$($value)`n`n$line`n" } #value has not yet set, but we're going to leave matching section
+                $cSection = $Matches.section
+                $ini += "$line`n"; continue
+            }
+            if ($cSection -ne $section) { $ini += "$line`n"; continue } # Section doesn't match, skip and continue
+            
+            
+            $isComment = $line -match '^[#;]'
+            if (!$uncomment -and $isComment) { $ini += "$line`n"; continue } # Skip comments, if we don't want to uncomment
+
+            
+            # try to get key-value-pair
+            if ($line -match "(?<key>.*)=(?<value>.*)") { # $line is a key-value pair
+                
+                $cKey = $Matches.key.Trim()
+                if ($isComment) { $cKey = $cKey.Substring(1).TrimStart() }  # uncomment sKey
+                
+                if ($key.ToLower() -ne $cKey.ToLower()) { $ini += "$line`n"; continue } # key and cKey don't match, skip
+
+                #changing value
+                Write-Verbose "changing: '$line' => '$($cKey)=$($value)' in section [$($section)]"
+
+                $ini += "$($cKey)=$($value)`n"
+                $hasSet = $true
+
+            } else { $ini += "$line`n"; continue } # $line is no key-value-pair
+
+        }
+
+        Write-Verbose "has set: $hasSet [$section] $key=$value"
+
+        if (!$hasSet) { # value has not yet set.
+            if ($cSection -ne $section) { Write-Verbose "adding: section [$($section)]"; $ini += "`n[$section]`n" } # we were even missing the section
+            Write-Verbose "adding: '$($Key)=$($value)' in section [$($section)]"
+            $ini += "$($Key)=$($value)`n" 
+        } 
+
+
+        # return (Get-Content $file) -replace $regex, 'https://newurl.com' #| Set-Content $file
+        return $ini.Substring(0,$ini.Length-1)
+    }
+}
+Export-ModuleMember -Function Set-IniContent
+
+#endregion
+
+
