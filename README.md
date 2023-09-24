@@ -5,7 +5,15 @@ A collection of powershell functions, put in a module to make scripting easier
 ## Installation
 
 ``` powershell
-Import-Module ps-bricks.psm1 -Force
+#download Module
+$modulePath = Join-Path ($Env:PSModulePath.Split(';') -like "$($env:USERPROFILE)*PowerShell\Modules")[0] 'ps-bricks'
+if (Test-Path $modulePath) { New-Item $modulePath -ItemType Directory | Out-Null }
+Invoke-WebRequest 'https://raw.githubusercontent.com/pagebox/ps-bricks/main/ps-bricks.psm1' -OutFile (Join-Path $modulePath 'ps-bricks.psm1')
+Invoke-WebRequest 'https://raw.githubusercontent.com/pagebox/ps-bricks/main/ps-bricks.psd1' -OutFile (Join-Path $modulePath 'ps-bricks.psd1')
+
+#load Module
+Import-Module ps-bricks -Force
+Get-Module ps-bricks | fl
 ```
 
 ## Functions
@@ -29,4 +37,3 @@ Import-Module Pester -Passthru
 ``` powershell
 Invoke-Pester -Output Detailed .\tests\ps-bricks.Tests.ps1 
 ```
-
