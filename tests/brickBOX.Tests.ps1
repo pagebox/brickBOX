@@ -1,6 +1,6 @@
 BeforeAll {
     # $PSScriptRoot
-    Import-Module .\ps-bricks.psm1 -Force
+    Import-Module .\brickBOX.psm1 -Force
 
     $iniSample = @"
 Name=unknown
