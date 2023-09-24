@@ -1,11 +1,13 @@
 BeforeAll {
     # $PSScriptRoot
     Import-Module .\brickBOX.psm1 -Force
+    
+    $PSDefaultParameterValues = $null
 
     $iniSample = @"
 Name=unknown
 #City=nowhere
-dtparam=audio=off
+first=second=off
 
 [colors]
 Favorite=Black
@@ -16,7 +18,6 @@ Favorite=Black
 AfterAll {
     Remove-Item HKCU:\SOFTWARE\pageBOX\Secret\pester\ -ErrorAction SilentlyContinue
 }
-
 
 
 Describe 'Get-Secret' {
@@ -59,10 +60,9 @@ Describe 'Set-IniContent' {
             $iniSample | Should -Not -BeLike '*#City=nowhere*'
         }
         It 'Changing double equation' {
-            #dtparam=audio=off
-            $iniSample = Set-IniContent $iniSample 'dtparam=audio' 'on'
-            $iniSample | Should -Not -BeLike '*dtparam=audio=off*'
-            $iniSample | Should -BeLike '*dtparam=audio=on*'
+            $iniSample = Set-IniContent $iniSample 'first=second' 'on'
+            $iniSample | Should -Not -BeLike '*first=second=off*'
+            $iniSample | Should -BeLike '*first=second=on*'
         }
     }
     Context 'Content in Section' {
