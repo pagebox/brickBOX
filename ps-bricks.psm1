@@ -1,15 +1,5 @@
-<#
-.SYNOPSIS
-    A collection of powershell functions, put in a module to make scripting easier
-.LINK 
-    https://github.com/pagebox/ps-bricks
-
-#>
-
-
 
 #region "⚡ ScriptProcessing"
-
 
 <#
 .SYNOPSIS
