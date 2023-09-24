@@ -1,6 +1,6 @@
 @{
 
-RootModule = 'ps-bricks.psm1'   # Script module or binary module file associated with this manifest.
+RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
 ModuleVersion = '1.0.0'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
@@ -43,8 +43,8 @@ AliasesToExport = @()           # Aliases to export from this module, for best p
 PrivateData = @{
     PSData = @{
         # Tags = @()            # Tags applied to this module. These help with module discovery in online galleries.
-        LicenseUri = 'https://github.com/pagebox/ps-bricks/raw/main/LICENSE'
-        ProjectUri = 'https://github.com/pagebox/ps-bricks/'
+        LicenseUri = 'https://github.com/pageBOX/brickBOX/raw/main/LICENSE'
+        ProjectUri = 'https://github.com/pageBOX/brickBOX/'
         # IconUri = ''          # A URL to an icon representing this module.
         # ReleaseNotes = ''     # ReleaseNotes of this module
         # Prerelease = ''       # Prerelease string of this module
