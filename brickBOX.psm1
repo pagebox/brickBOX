@@ -47,7 +47,7 @@ function Get-Secret {
     if ($value) {
         $value = $value.$Name | ConvertTo-SecureString
     } else {
-        if ($null -ne $Secret) {
+        if (![string]::IsNullOrEmpty($Secret)) {
             $value = ConvertTo-SecureString $Secret -AsPlainText
         } else {
             $value = Read-Host "Please enter '$Name'" -AsSecureString
@@ -97,7 +97,7 @@ function Set-IniContent {
             
             # Section
             if ($line -match "^\[(?<section>.+)\]") {
-                if (!$hasSet -and ($cSection -eq $section)) { $ini += "$($Key)=$($value)`n`n$line`n" } #value has not yet set, but we're going to leave matching section
+                if (!$hasSet -and ($cSection -eq $section)) { $ini += "$Key=$value`n`n$line`n" } #value has not yet set, but we're going to leave matching section
                 $cSection = $Matches.section
                 $ini += "$line`n"; continue
             }
@@ -113,25 +113,29 @@ function Set-IniContent {
                 
                 $cKey = $Matches.key.Trim()
                 if ($isComment) { $cKey = $cKey.Substring(1).TrimStart() }  # uncomment sKey
-                
+
                 if ($key.ToLower() -ne $cKey.ToLower()) { $ini += "$line`n"; continue } # key and cKey don't match, skip
 
-                #changing value
-                Write-Verbose "changing: '$line' => '$($cKey)=$($value)' in section [$($section)]"
-
-                $ini += "$($cKey)=$($value)`n"
+                if ($line -ne "$cKey=$value" ) {
+                    # changing value
+                    Write-Verbose "🟠 changing: '$line' => '$cKey=$value' in section [$section]"
+                    $ini += "$cKey=$value`n"
+                } else { # no need to change
+                    Write-Verbose "⚪ unchanged: '$line' in section [$section]"
+                    $ini += "$line`n"
+                }
+                
                 $hasSet = $true
 
             } else { $ini += "$line`n"; continue } # $line is no key-value-pair
 
         }
 
-        Write-Verbose "has set: $hasSet [$section] $key=$value"
 
         if (!$hasSet) { # value has not yet set.
-            if ($cSection -ne $section) { Write-Verbose "adding: section [$($section)]"; $ini += "`n[$section]`n" } # we were even missing the section
-            Write-Verbose "adding: '$($Key)=$($value)' in section [$($section)]"
-            $ini += "$($Key)=$($value)`n" 
+            if ($cSection -ne $section) { Write-Verbose "adding: section [$section]"; $ini += "`n[$section]`n" } # we were even missing the section
+            Write-Verbose "🟢 adding: '$Key=$value' in section [$section]"
+            $ini += "$Key=$value`n" 
         } 
 
 
