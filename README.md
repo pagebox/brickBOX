@@ -1,17 +1,15 @@
 # brickBOX
 
-A collection of powershell functions, put in a module to make scripting easier
+A collection of powershell functions, put in a module to make scripting easier. 
+
+The project is available on [PowerShell Gallery](https://www.powershellgallery.com/packages/brickBOX).
+
 
 ## Installation
 
 ``` powershell
 #download Module 
-$modulePath = Join-Path ($Env:PSModulePath.Split(';') -like "$($env:ProgramFiles)*WindowsPowerShell*")[0] 'brickBOX'
-if (Test-Path $modulePath) { New-Item $modulePath -ItemType Directory | Out-Null }
-Invoke-WebRequest 'https://raw.githubusercontent.com/pageBOX/brickBOX/main/brickBOX.psm1' -OutFile (Join-Path $modulePath 'brickBOX.psm1')
-Invoke-WebRequest 'https://raw.githubusercontent.com/pageBOX/brickBOX/main/brickBOX.psd1' -OutFile (Join-Path $modulePath 'brickBOX.psd1')
-
-#load Module
+Install-Module -Name brickBOX
 Import-Module brickBOX -Force
 Get-Module brickBOX | fl
 ```
@@ -36,4 +34,9 @@ Import-Module Pester -Passthru
 
 ``` powershell
 Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 
+```
+
+## Upload Package to PowerShell Gallery
+``` powershell
+Publish-Module -Name brickBOX -NuGetApiKey <apiKey>
 ```
