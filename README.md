@@ -9,7 +9,7 @@ The project is available on [PowerShell Gallery](https://www.powershellgallery.c
 
 ``` powershell
 #download Module 
-Install-Module -Name brickBOX
+Install-Module -Name brickBOX -Scope AllUsers
 Import-Module brickBOX -Force
 Get-Module brickBOX | fl
 ```
