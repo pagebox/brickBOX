@@ -19,6 +19,7 @@ Get-Module brickBOX | fl
 **Start-Elevated** Executes a PowerShell script or command with elevated rights  
 **Get-Secret** Reads and saves secure strings to hkcu in a secure way.  
 **Set-IniContent** Add or Update key-value pairs in ini-files  
+**Invoke-API** Simplifies Invoke-RestMethod  
 
 
 ## Testing
@@ -26,14 +27,14 @@ Get-Module brickBOX | fl
 ### Install Pester
 
 ``` powershell
-Install-Module Pester -Force
+Install-Module Pester -Force -Scope AllUsers
 Import-Module Pester -Passthru
 ```
 
 ### Perform Tests
 
 ``` powershell
-Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 
+Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1
 ```
 
 ## Upload Package to PowerShell Gallery
