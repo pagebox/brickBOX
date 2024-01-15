@@ -67,7 +67,7 @@ Export-ModuleMember -Function Get-Secret
 
 
 #region "⚡ FileSystemObject"
-   
+
 <#
 .SYNOPSIS
     Add or Update key-value pairs in ini-files
@@ -148,3 +148,82 @@ Export-ModuleMember -Function Set-IniContent
 #endregion
 
 
+#region "⚡ API"
+
+<#
+.SYNOPSIS
+Simplifies Invoke-RestMethod
+
+.DESCRIPTION
+Simplifies Invoke-RestMethod
+
+.PARAMETER Method
+POST   Create a record
+GET    Retrieve a record
+PUT    Modify a record. Replace the entire resource with given data (null out fields if they are not provided in the request)
+DELETE Delete a record
+PATCH  Update a record. Replace only specified fields
+
+.PARAMETER Uri
+complete url of the API, including https
+
+.PARAMETER Payload
+payload, mandatory for post, put and patch
+
+.PARAMETER NoOutput
+Omits any output, but errors
+
+.PARAMETER Headers
+Overwrite the $PSDefaultParameterValues for Invoke-RestMethod:Headers on this call
+
+.PARAMETER ContentType
+Overwrite the $PSDefaultParameterValues for Invoke-RestMethod:ContentType on this call
+
+.EXAMPLE
+Invoke-API get "https://api.ipify.org?format=json"
+
+.EXAMPLE
+$PSDefaultParameterValues = @{
+    "Invoke-RestMethod:Headers"= @{
+        'Accept' = "application/json"
+        'Authorization' = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("username:pa$$word")))"
+    }
+    "Invoke-RestMethod:ContentType"="application/json; charset=utf-8"
+}
+
+Invoke-API post "https://reqres.in/api/users" -Payload @"
+    {
+        "name": "Julius User",
+        "job": "leader"
+    }
+"@
+
+#>
+function Invoke-API {
+    param(
+        [ValidateSet('post', 'get', 'put', 'delete', 'patch')][string]$Method = 'get',
+        [string]$Uri,
+        [string]$Payload,
+        [switch]$NoOutput = $false,
+        #[Hashtable]$Headers = $PSDefaultParameterValues["Invoke-RestMethod:Headers"],
+        [Hashtable]$Headers = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:Headers"]} else {@{}}),
+        #[string]$ContentType = $PSDefaultParameterValues["Invoke-RestMethod:ContentType"]  # "application/json; charset=utf-8"
+        [string]$ContentType = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:ContentType"]})  # "application/json; charset=utf-8"
+    )
+
+    if ($Method -eq 'get') {
+        $response = Invoke-RestMethod -Uri $Uri #-Headers $Headers -ContentType $ContentType
+    }
+    else {
+        $response = Invoke-RestMethod -Method $Method -Uri $Uri -Body $Payload -Headers $Headers -ContentType $ContentType
+    }
+    
+    # if (!$NoOutput) { $response.result }
+    if (!$NoOutput) {
+        if ($response.result) { $response.result } # ServiceNOW
+        else { $response }
+    }
+}
+Export-ModuleMember -Function Invoke-API
+
+#endregion

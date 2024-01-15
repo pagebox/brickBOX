@@ -85,3 +85,11 @@ Describe 'Set-IniContent' {
 
 }
 
+Describe 'Invoke-API' {
+    Context 'Simple Invoke' {
+        It 'Invoke simple get to public api' {
+            $apiContent = Invoke-API get "https://api.ipify.org?format=json"
+            $apiContent.ip -imatch '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$' | Should -BeTrue
+        }
+    }
+}
