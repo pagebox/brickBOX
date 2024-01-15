@@ -205,20 +205,17 @@ function Invoke-API {
         [string]$Uri,
         [string]$Payload,
         [switch]$NoOutput = $false,
-        #[Hashtable]$Headers = $PSDefaultParameterValues["Invoke-RestMethod:Headers"],
         [Hashtable]$Headers = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:Headers"]} else {@{}}),
-        #[string]$ContentType = $PSDefaultParameterValues["Invoke-RestMethod:ContentType"]  # "application/json; charset=utf-8"
         [string]$ContentType = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:ContentType"]})  # "application/json; charset=utf-8"
     )
 
     if ($Method -eq 'get') {
-        $response = Invoke-RestMethod -Uri $Uri #-Headers $Headers -ContentType $ContentType
+        $response = Invoke-RestMethod -Uri $Uri -Headers $Headers -ContentType $ContentType
     }
     else {
         $response = Invoke-RestMethod -Method $Method -Uri $Uri -Body $Payload -Headers $Headers -ContentType $ContentType
     }
     
-    # if (!$NoOutput) { $response.result }
     if (!$NoOutput) {
         if ($response.result) { $response.result } # ServiceNOW
         else { $response }
