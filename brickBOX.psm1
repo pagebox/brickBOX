@@ -25,6 +25,34 @@ function Start-Elevated {
 Export-ModuleMember -Function Start-Elevated
 
 
+# todo: doku
+function Set-Secret {
+    param (
+        [Parameter(Mandatory = $true)][string]$projectName,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [string]$Secret = $null,
+        [switch]$Save = $false
+    )
+    $regKey = "HKCU:\Software\pageBOX\Secret\$projectName"
+
+    if (![string]::IsNullOrEmpty($Secret)) {
+        $value = ConvertTo-SecureString $Secret -AsPlainText
+    } else {
+        $value = Read-Host "Please enter '$Name'" -AsSecureString
+    }
+
+    if ($Save -or $Host.UI.PromptForChoice('Confirm:', 'Do you want to save password to Registry?', ('&Yes', '&No'), 0) -eq 0) {
+        if (!(Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
+        New-ItemProperty -Path $regKey -Name $Name -Value ($value | ConvertFrom-SecureString) -PropertyType "String" -Force | Out-Null
+    }
+
+    return $value
+
+}
+Export-ModuleMember -Function Set-Secret
+
+
+
 <#
 .SYNOPSIS
     Reads and saves secure strings to hkcu in a secure way.
@@ -62,6 +90,15 @@ function Get-Secret {
     return $value 
 }
 Export-ModuleMember -Function Get-Secret
+
+
+function Clear-Secret {
+    param (
+        
+    )
+    
+}
+
 
 #endregion
 
