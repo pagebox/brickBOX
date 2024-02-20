@@ -1,7 +1,7 @@
 @{
 
 RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
-ModuleVersion = '1.1.1'         # Version number of this module.
+ModuleVersion = '1.1.2'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
 

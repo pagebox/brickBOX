@@ -205,8 +205,8 @@ function Invoke-API {
         [string]$Uri,
         [string]$Payload,
         [switch]$NoOutput = $false,
-        [Hashtable]$Headers = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:Headers"]} else {@{}}),
-        [string]$ContentType = $(if ($null -ne $PSDefaultParameterValues) {$PSDefaultParameterValues["Invoke-RestMethod:ContentType"]})  # "application/json; charset=utf-8"
+        [Hashtable]$Headers = $(if ($null -ne $Global:PSDefaultParameterValues) {$Global:PSDefaultParameterValues["Invoke-RestMethod:Headers"]} else {@{}}),
+        [string]$ContentType = $(if ($null -ne $Global:PSDefaultParameterValues) {$Global:PSDefaultParameterValues["Invoke-RestMethod:ContentType"]})  # "application/json; charset=utf-8"
     )
 
     if ($Method -eq 'get') {
