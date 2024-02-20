@@ -7,7 +7,7 @@ GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify th
 
 Author = 'Patrick Page Gehrig'
 CompanyName = 'pageBOX.ch'
-Copyright = '(c) 2023 Patrick Page Gehrig. All rights reserved.'
+Copyright = '(c) 2024 Patrick Page Gehrig. All rights reserved.'
 
 Description = 'A collection of powershell functions, put in a module to make scripting easier'
 

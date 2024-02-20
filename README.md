@@ -39,6 +39,5 @@ Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1
 
 ## Upload Package to PowerShell Gallery
 ``` powershell
-
 Publish-Module -Name .\brickBOX.psm1 -NuGetApiKey <apiKey>
 ```
