@@ -17,7 +17,8 @@ Get-Module brickBOX | fl
 ## Functions
 
 **Start-Elevated** Executes a PowerShell script or command with elevated rights  
-**Get-Secret** Reads and saves secure strings to hkcu in a secure way.  
+**Set-Secret** Saves secure strings to hkcu in a secure way.  
+**Get-Secret** Reads secure strings from hkcu.  
 **Set-IniContent** Add or Update key-value pairs in ini-files  
 **Invoke-API** Simplifies Invoke-RestMethod  
 
