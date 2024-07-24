@@ -1,13 +1,13 @@
 @{
 
 RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
-ModuleVersion = '1.1.1'         # Version number of this module.
+ModuleVersion = '1.1.2'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
 
 Author = 'Patrick Page Gehrig'
 CompanyName = 'pageBOX.ch'
-Copyright = '(c) 2023 Patrick Page Gehrig. All rights reserved.'
+Copyright = '(c) 2024 Patrick Page Gehrig. All rights reserved.'
 
 Description = 'A collection of powershell functions, put in a module to make scripting easier'
 
