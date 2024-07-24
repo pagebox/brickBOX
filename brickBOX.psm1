@@ -3,6 +3,16 @@
 
 <#
 .SYNOPSIS
+Returns $true, if script runs with administrator privileges
+
+#>
+function Test-Admin {
+    return ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
+Export-ModuleMember -Function Test-Admin
+
+<#
+.SYNOPSIS
     Executes a PowerShell script or command with elevated rights
 .EXAMPLE
     Start-Elevated notepad.exe
@@ -14,7 +24,7 @@ function Start-Elevated {
         [switch]$NoExit 
     )
 
-    if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { 
+    if (!Test-Admin) { 
         Write-Host "Script needs elevation: '$Command'" 
         $ArgumentList = [System.Collections.ArrayList]@("-NoProfile", "-ExecutionPolicy Bypass")
         if ($NoExit) { $ArgumentList.Add("-NoExit")}
@@ -23,6 +33,7 @@ function Start-Elevated {
     }
 }
 Export-ModuleMember -Function Start-Elevated
+
 
 
 
@@ -74,11 +85,9 @@ function Get-Secret {
         [Parameter(Mandatory = $true)][string]$Name,
         [switch]$AsPlainText = $false
     )
-    # $value = Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue
     if ($projectName -eq '') { throw 'projectName must not be empty' }
     if ($Name -eq '') { throw 'Name must not be empty' }
     if ((Get-ItemProperty "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains $Name) {
-        # $value = $value.$Name | ConvertTo-SecureString
         $value = (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue).$Name | ConvertTo-SecureString
     } else {
         throw "$Name not found in $projectName"
@@ -90,13 +99,29 @@ function Get-Secret {
 Export-ModuleMember -Function Get-Secret
 
 
+<#
+.SYNOPSIS
+    Removes secure strings from hkcu.
+.EXAMPLE
+    Clear-Secret 'myProject' 'myPassword'
+    Removes the 'myPassword' secret form the registry
+.EXAMPLE
+    Clear-Secret 'myProject'
+    Removes the whole project 'myProject' with all its secret form the registry
+#>
 function Clear-Secret {
     param (
-        
+        [Parameter(Mandatory = $true)][string]$projectName,
+        [string]$Name = ''
     )
-    
+    if ($projectName -eq '') { throw 'projectName must not be empty' }
+    if ($Name -eq '') {
+        Remove-Item "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue
+    } else {
+        Remove-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue
+    }
 }
-
+Export-ModuleMember -Function Clear-Secret
 
 #endregion
 
@@ -189,9 +214,6 @@ Export-ModuleMember -Function Set-IniContent
 .SYNOPSIS
 Simplifies Invoke-RestMethod
 
-.DESCRIPTION
-Simplifies Invoke-RestMethod
-
 .PARAMETER Method
 POST   Create a record
 GET    Retrieve a record
@@ -246,8 +268,7 @@ function Invoke-API {
 
     if ($Method -eq 'get') {
         $response = Invoke-RestMethod -Uri $Uri -Headers $Headers -ContentType $ContentType
-    }
-    else {
+    } else {
         $response = Invoke-RestMethod -Method $Method -Uri $Uri -Body $Payload -Headers $Headers -ContentType $ContentType
     }
     

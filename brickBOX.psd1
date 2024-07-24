@@ -1,7 +1,7 @@
 @{
 
 RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
-ModuleVersion = '1.1.2'         # Version number of this module.
+ModuleVersion = '1.2.0'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
 
@@ -27,8 +27,11 @@ PowerShellVersion = '5.1'       # Minimum version of the PowerShell engine requi
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
+    'Test-Admin',
     'Start-Elevated',
+    'Set-Secret',
     'Get-Secret',
+    'Clear-Secret',
     'Set-IniContent',
     'Invoke-API'
 )

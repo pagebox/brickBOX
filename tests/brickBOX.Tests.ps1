@@ -1,7 +1,6 @@
 if ($false) {
     Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1
-    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 -FullNameFilter 'Set-Secret, Get-Secret'
-    
+    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 -FullNameFilter 'Set-Secret, Get-Secret, Clear-Secret'
 }
 
 
@@ -27,7 +26,7 @@ AfterAll {
 }
 
 
-Describe 'Set-Secret, Get-Secret' {
+Describe 'Set-Secret, Get-Secret, Clear-Secret' {
     It 'Set-Secret with -WhatIf' {
         Set-Secret 'pester' 'keyWhatIf' 'password' -WhatIf
         (Get-ItemProperty 'HKCU:\SOFTWARE\pageBOX\Secret\pester\' -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains 'keyWhatIf' | Should -BeFalse
@@ -60,6 +59,15 @@ Describe 'Set-Secret, Get-Secret' {
     }
     It 'Missing parameter "projectName" should throw an exception' {
         {Get-Secret '' 'key' } | Should -Throw 
+    }
+    It 'Removal of single Secret should succeed.' {
+        Clear-Secret 'pester' 'key' 
+        (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\pester" -Name 'key' -ErrorAction SilentlyContinue).'key' | Should -BeNullOrEmpty
+        {Get-Item -Path "HKCU:\Software\pageBOX\Secret\pester" -ErrorAction SilentlyContinue} | Should -Not -Throw
+    }
+    It 'Removal of whole Secret project should succeed.' {
+        Clear-Secret 'pester'
+        Get-Item -Path "HKCU:\Software\pageBOX\Secret\pester" -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
 }
 
