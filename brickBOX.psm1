@@ -3,6 +3,16 @@
 
 <#
 .SYNOPSIS
+Returns $true, if script runs with administrator privileges
+
+#>
+function Test-Admin {
+    return ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+}
+Export-ModuleMember -Function Test-Admin
+
+<#
+.SYNOPSIS
     Executes a PowerShell script or command with elevated rights
 .EXAMPLE
     Start-Elevated notepad.exe
@@ -14,7 +24,7 @@ function Start-Elevated {
         [switch]$NoExit 
     )
 
-    if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { 
+    if (!Test-Admin) { 
         Write-Host "Script needs elevation: '$Command'" 
         $ArgumentList = [System.Collections.ArrayList]@("-NoProfile", "-ExecutionPolicy Bypass")
         if ($NoExit) { $ArgumentList.Add("-NoExit")}
@@ -25,43 +35,93 @@ function Start-Elevated {
 Export-ModuleMember -Function Start-Elevated
 
 
+
+
 <#
 .SYNOPSIS
-    Reads and saves secure strings to hkcu in a secure way.
+    Saves secure strings to hkcu in a secure way.
+.DESCRIPTION
+    The function becomes handy, if you need eg. passwords or api-key in your script, but you don't want to save them in the script.
+.EXAMPLE
+    $password = Set-Secret 'myProject' 'SecretName' 'myPassword'
+    Saves the password in the registry as SecureString
+#>
+function Set-Secret {
+    param (
+        [Parameter(Mandatory = $true)][string]$projectName,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [string]$Secret = $null,
+        [switch]$WhatIf = $false
+    )
+    $regKey = "HKCU:\Software\pageBOX\Secret\$projectName"
+
+    if (![string]::IsNullOrEmpty($Secret)) {
+        $value = ConvertTo-SecureString $Secret -AsPlainText
+    } else {
+        $value = Read-Host "Please enter '$Name'" -AsSecureString
+    }
+
+    if (!$WhatIf) {
+        if (!(Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
+        New-ItemProperty -Path $regKey -Name $Name -Value ($value | ConvertFrom-SecureString) -PropertyType "String" -Force | Out-Null
+    }
+}
+Export-ModuleMember -Function Set-Secret
+
+
+
+<#
+.SYNOPSIS
+    Reads secure strings from hkcu.
 .DESCRIPTION
     The function becomes handy, if you need eg. passwords or api-key in your script, but you don't want to save them in the script.
 .EXAMPLE
     $password = Get-Secret 'myProject' 'myPassword'
-    saves the prompted password in the registry and sets $password as SecureString
+    Gets the password earlier saved from the registry and sets $password as SecureString
 #>
 function Get-Secret {
     param (
         [Parameter(Mandatory = $true)][string]$projectName,
         [Parameter(Mandatory = $true)][string]$Name,
-        [string]$Secret = $null,
-        [switch]$AsPlainText = $false,
-        [switch]$Save = $false
+        [switch]$AsPlainText = $false
     )
-    $regKey = "HKCU:\Software\pageBOX\Secret\$projectName"
-    $value = Get-ItemProperty -Path $regKey -Name $Name -ErrorAction SilentlyContinue
-    if ($value) {
-        $value = $value.$Name | ConvertTo-SecureString
+    if ($projectName -eq '') { throw 'projectName must not be empty' }
+    if ($Name -eq '') { throw 'Name must not be empty' }
+    if ((Get-ItemProperty "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains $Name) {
+        $value = (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue).$Name | ConvertTo-SecureString
     } else {
-        if (![string]::IsNullOrEmpty($Secret)) {
-            $value = ConvertTo-SecureString $Secret -AsPlainText
-        } else {
-            $value = Read-Host "Please enter '$Name'" -AsSecureString
-        }
-        if ($Save -or $Host.UI.PromptForChoice('Confirm:', 'Do you want to save password to Registry?', ('&Yes', '&No'), 0) -eq 0) {
-            if (!(Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
-            New-ItemProperty -Path $regKey -Name $Name -Value ($value | ConvertFrom-SecureString) -PropertyType "String" -Force | Out-Null
-        }
+        throw "$Name not found in $projectName"
     }
 
     if ($AsPlainText) { return (New-Object System.Management.Automation.PSCredential 0, $value).GetNetworkCredential().Password }
     return $value 
 }
 Export-ModuleMember -Function Get-Secret
+
+
+<#
+.SYNOPSIS
+    Removes secure strings from hkcu.
+.EXAMPLE
+    Clear-Secret 'myProject' 'myPassword'
+    Removes the 'myPassword' secret form the registry
+.EXAMPLE
+    Clear-Secret 'myProject'
+    Removes the whole project 'myProject' with all its secret form the registry
+#>
+function Clear-Secret {
+    param (
+        [Parameter(Mandatory = $true)][string]$projectName,
+        [string]$Name = ''
+    )
+    if ($projectName -eq '') { throw 'projectName must not be empty' }
+    if ($Name -eq '') {
+        Remove-Item "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue
+    } else {
+        Remove-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue
+    }
+}
+Export-ModuleMember -Function Clear-Secret
 
 #endregion
 
@@ -154,9 +214,6 @@ Export-ModuleMember -Function Set-IniContent
 .SYNOPSIS
 Simplifies Invoke-RestMethod
 
-.DESCRIPTION
-Simplifies Invoke-RestMethod
-
 .PARAMETER Method
 POST   Create a record
 GET    Retrieve a record
@@ -211,8 +268,7 @@ function Invoke-API {
 
     if ($Method -eq 'get') {
         $response = Invoke-RestMethod -Uri $Uri -Headers $Headers -ContentType $ContentType
-    }
-    else {
+    } else {
         $response = Invoke-RestMethod -Method $Method -Uri $Uri -Body $Payload -Headers $Headers -ContentType $ContentType
     }
     

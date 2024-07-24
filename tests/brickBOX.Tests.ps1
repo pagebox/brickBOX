@@ -1,3 +1,9 @@
+if ($false) {
+    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1
+    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 -FullNameFilter 'Set-Secret, Get-Secret, Clear-Secret'
+}
+
+
 BeforeAll {
     # $PSScriptRoot
     Import-Module .\brickBOX.psm1 -Force
@@ -20,13 +26,22 @@ AfterAll {
 }
 
 
-Describe 'Get-Secret' {
-    It 'New secret should be of type SecureString and decrypted value should be "test"' {
-        $pw = Get-Secret 'pester' 'key' -Save -Secret "test"
-        $pw | Should -BeOfType System.Security.SecureString
-        (New-Object System.Management.Automation.PSCredential 0, $pw).GetNetworkCredential().Password | Should -Be "test"
+Describe 'Set-Secret, Get-Secret, Clear-Secret' {
+    It 'Set-Secret with -WhatIf' {
+        Set-Secret 'pester' 'keyWhatIf' 'password' -WhatIf
+        (Get-ItemProperty 'HKCU:\SOFTWARE\pageBOX\Secret\pester\' -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains 'keyWhatIf' | Should -BeFalse
     }
-    It 'Reloaded secret should be of type SecureString and decrypted value should be "test"' {
+    It 'New secret should not throw exception' {
+        {Set-Secret 'pester' 'key' 'test'} | Should -Not -Throw
+    }
+    It 'saved secret in the registry should exist, be a SecureString and not PlainText' {
+        (Get-ItemProperty 'HKCU:\SOFTWARE\pageBOX\Secret\pester\' -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains 'key' | Should -BeTrue
+        
+        $pw = (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\pester" -Name 'key' -ErrorAction SilentlyContinue).'key'
+        $pw | Should -Not -Be 'test'
+        {$pw | ConvertTo-SecureString} | Should -Not -Throw
+    }
+    It 'Loaded secret should be of type SecureString and decrypted value should be "test"' {
         $pw = Get-Secret 'pester' 'key'
         $pw | Should -BeOfType System.Security.SecureString
         (New-Object System.Management.Automation.PSCredential 0, $pw).GetNetworkCredential().Password | Should -Be "test"
@@ -36,7 +51,24 @@ Describe 'Get-Secret' {
         $pw | Should -BeOfType string
         $pw | Should -Be "test"
     }
-    
+    It 'Trying to get a missing secret should throw an exception' {
+        {Get-Secret 'pester' 'missing'} | Should -Throw 
+    }
+    It 'Missing parameter "name" should throw an exception' {
+        {Get-Secret 'pester' '' } | Should -Throw 
+    }
+    It 'Missing parameter "projectName" should throw an exception' {
+        {Get-Secret '' 'key' } | Should -Throw 
+    }
+    It 'Removal of single Secret should succeed.' {
+        Clear-Secret 'pester' 'key' 
+        (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\pester" -Name 'key' -ErrorAction SilentlyContinue).'key' | Should -BeNullOrEmpty
+        {Get-Item -Path "HKCU:\Software\pageBOX\Secret\pester" -ErrorAction SilentlyContinue} | Should -Not -Throw
+    }
+    It 'Removal of whole Secret project should succeed.' {
+        Clear-Secret 'pester'
+        Get-Item -Path "HKCU:\Software\pageBOX\Secret\pester" -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Set-IniContent' {
