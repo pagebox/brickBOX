@@ -16,13 +16,15 @@ Get-Module brickBOX | fl
 
 ## Functions
 
-**Test-Admin** Returns $true, if script runs with administrator privileges  
-**Start-Elevated** Executes a PowerShell script or command with elevated rights  
-**Set-Secret** Saves secure strings to hkcu in a secure way.  
-**Get-Secret** Reads secure strings from hkcu.  
-**Clear-Secret** Removes secure strings from hkcu.
-**Set-IniContent** Add or Update key-value pairs in ini-files  
-**Invoke-API** Simplifies Invoke-RestMethod  
+Function        | Description
+--------------- | -----------
+Test-Admin      | Returns $true, if script runs with administrator privileges  
+Start-Elevated  | Executes a PowerShell script or command with elevated rights  
+Set-Secret      | Saves secure strings to hkcu in a secure way.  
+Get-Secret      | Reads secure strings from hkcu.  
+Clear-Secret    | Removes secure strings from hkcu.
+Set-IniContent  | Add or Update key-value pairs in ini-files  
+Invoke-API      | Simplifies Invoke-RestMethod  
 
 
 ## Testing
