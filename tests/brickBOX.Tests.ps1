@@ -6,7 +6,7 @@ if ($false) {
 
 BeforeAll {
     # $PSScriptRoot
-    Import-Module .\brickBOX.psm1 -Force
+    Import-Module .\brickBOX.psm1 -Force -Global; Get-Module brickBOX
     
     $PSDefaultParameterValues = $null
 
@@ -115,6 +115,14 @@ Describe 'Set-IniContent' {
         }
     }
 
+}
+
+Describe 'Get-BasicAuthForHeader' {
+    Context 'Simple Get' {
+        It 'Get predictable AuthString' {
+            Get-BasicAuthForHeader -username 'user' -password (ConvertTo-SecureString "password" -AsPlainText -Force) | Should -be 'Basic dXNlcjpwYXNzd29yZA=='
+        }
+    }
 }
 
 Describe 'Invoke-API' {

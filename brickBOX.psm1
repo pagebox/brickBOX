@@ -81,12 +81,10 @@ Export-ModuleMember -Function Set-Secret
 #>
 function Get-Secret {
     param (
-        [Parameter(Mandatory = $true)][string]$projectName,
-        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Name,
         [switch]$AsPlainText = $false
     )
-    if ($projectName -eq '') { throw 'projectName must not be empty' }
-    if ($Name -eq '') { throw 'Name must not be empty' }
     if ((Get-ItemProperty "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains $Name) {
         $value = (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue).$Name | ConvertTo-SecureString
     } else {
@@ -111,10 +109,9 @@ Export-ModuleMember -Function Get-Secret
 #>
 function Clear-Secret {
     param (
-        [Parameter(Mandatory = $true)][string]$projectName,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
         [string]$Name = ''
     )
-    if ($projectName -eq '') { throw 'projectName must not be empty' }
     if ($Name -eq '') {
         Remove-Item "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue
     } else {
@@ -209,6 +206,16 @@ Export-ModuleMember -Function Set-IniContent
 
 
 #region "⚡ API"
+
+
+function Get-BasicAuthForHeader {
+    param (
+        [Parameter(Mandatory=$true)][string]$username,
+        [Parameter(Mandatory=$true)][SecureString]$password
+    )
+    return "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$username`:$((New-Object System.Management.Automation.PSCredential 0, $password).GetNetworkCredential().Password)")))"
+}
+
 
 <#
 .SYNOPSIS
