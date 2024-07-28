@@ -24,7 +24,7 @@ function Start-Elevated {
         [switch]$NoExit 
     )
 
-    if (!Test-Admin) { 
+    if (!(Test-Admin)) { 
         Write-Host "Script needs elevation: '$Command'" 
         $ArgumentList = [System.Collections.ArrayList]@("-NoProfile", "-ExecutionPolicy Bypass")
         if ($NoExit) { $ArgumentList.Add("-NoExit")}
@@ -81,12 +81,10 @@ Export-ModuleMember -Function Set-Secret
 #>
 function Get-Secret {
     param (
-        [Parameter(Mandatory = $true)][string]$projectName,
-        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Name,
         [switch]$AsPlainText = $false
     )
-    if ($projectName -eq '') { throw 'projectName must not be empty' }
-    if ($Name -eq '') { throw 'Name must not be empty' }
     if ((Get-ItemProperty "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains $Name) {
         $value = (Get-ItemProperty -Path "HKCU:\Software\pageBOX\Secret\$projectName" -Name $Name -ErrorAction SilentlyContinue).$Name | ConvertTo-SecureString
     } else {
@@ -111,10 +109,9 @@ Export-ModuleMember -Function Get-Secret
 #>
 function Clear-Secret {
     param (
-        [Parameter(Mandatory = $true)][string]$projectName,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
         [string]$Name = ''
     )
-    if ($projectName -eq '') { throw 'projectName must not be empty' }
     if ($Name -eq '') {
         Remove-Item "HKCU:\SOFTWARE\pageBOX\Secret\$projectName\" -ErrorAction SilentlyContinue
     } else {
@@ -131,8 +128,6 @@ Export-ModuleMember -Function Clear-Secret
 <#
 .SYNOPSIS
     Add or Update key-value pairs in ini-files
-.LINK
-    Specify a URI to a help page, this will show when Get-Help -Online is used.
 .EXAMPLE
     $payload = Set-IniContent $payload 'color' 'red' 
     sets the color=red in an ini-like content of $payload.
@@ -151,21 +146,22 @@ function Set-IniContent {
         [String]$cSection = "" # Current Section
         [bool]$hasSet = $false
 
-        foreach ($line in $payload.Split("`n")) {
+        foreach ($line in $payload.Split("`n")) { 
+            $line = $line.Replace("`r","") # remove CR
 
-            if ($line -eq '') { $ini += "$line`n"; continue } # Skip empty line
+            if ($line -eq "") { $ini += "$line`r`n"; continue } # Skip empty line
             
             # Section
             if ($line -match "^\[(?<section>.+)\]") {
-                if (!$hasSet -and ($cSection -eq $section)) { $ini += "$Key=$value`n`n$line`n" } #value has not yet set, but we're going to leave matching section
+                if (!$hasSet -and ($cSection -eq $section)) { $ini += "$Key=$value`r`n`r`n$line`r`n" } #value has not yet set, but we're going to leave matching section
                 $cSection = $Matches.section
-                $ini += "$line`n"; continue
+                $ini += "$line`r`n"; continue
             }
-            if ($cSection -ne $section) { $ini += "$line`n"; continue } # Section doesn't match, skip and continue
+            if ($cSection -ne $section) { $ini += "$line`r`n"; continue } # Section doesn't match, skip and continue
             
             
             $isComment = $line -match '^[#;]'
-            if (!$uncomment -and $isComment) { $ini += "$line`n"; continue } # Skip comments, if we don't want to uncomment
+            if (!$uncomment -and $isComment) { $ini += "$line`r`n"; continue } # Skip comments, if we don't want to uncomment
 
             
             # try to get key-value-pair
@@ -174,28 +170,28 @@ function Set-IniContent {
                 $cKey = $Matches.key.Trim()
                 if ($isComment) { $cKey = $cKey.Substring(1).TrimStart() }  # uncomment sKey
 
-                if ($key.ToLower() -ne $cKey.ToLower()) { $ini += "$line`n"; continue } # key and cKey don't match, skip
+                if ($key.ToLower() -ne $cKey.ToLower()) { $ini += "$line`r`n"; continue } # key and cKey don't match, skip
 
                 if ($line -ne "$cKey=$value" ) {
                     # changing value
                     Write-Verbose "🟠 changing: '$line' => '$cKey=$value' in section [$section]"
-                    $ini += "$cKey=$value`n"
+                    $ini += "$cKey=$value`r`n"
                 } else { # no need to change
                     Write-Verbose "⚪ unchanged: '$line' in section [$section]"
-                    $ini += "$line`n"
+                    $ini += "$line`r`n"
                 }
                 
                 $hasSet = $true
 
-            } else { $ini += "$line`n"; continue } # $line is no key-value-pair
+            } else { $ini += "$line`r`n"; continue } # $line is no key-value-pair
 
         }
 
 
         if (!$hasSet) { # value has not yet set.
-            if ($cSection -ne $section) { Write-Verbose "adding: section [$section]"; $ini += "`n[$section]`n" } # we were even missing the section
+            if ($cSection -ne $section) { Write-Verbose "adding: section [$section]"; $ini += "`r`n[$section]`r`n" } # we were even missing the section
             Write-Verbose "🟢 adding: '$Key=$value' in section [$section]"
-            $ini += "$Key=$value`n" 
+            $ini += "$Key=$value`r`n" 
         } 
 
 
@@ -209,6 +205,25 @@ Export-ModuleMember -Function Set-IniContent
 
 
 #region "⚡ API"
+
+<#
+.SYNOPSIS
+    Creates the content of the value for the 'Authorization' Property.
+.EXAMPLE
+    $PSDefaultParameterValues = @{
+        "Invoke-RestMethod:Headers"= @{
+            'Authorization' = Get-BasicAuthForHeader -username 'username' -password (ConvertTo-SecureString "password" -AsPlainText -Force)
+        }
+    }
+#>
+function Get-BasicAuthForHeader {
+    param (
+        [Parameter(Mandatory=$true)][string]$username,
+        [Parameter(Mandatory=$true)][SecureString]$password
+    )
+    return "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$username`:$((New-Object System.Management.Automation.PSCredential 0, $password).GetNetworkCredential().Password)")))"
+}
+Export-ModuleMember -Function Get-BasicAuthForHeader
 
 <#
 .SYNOPSIS
@@ -238,6 +253,9 @@ Overwrite the $PSDefaultParameterValues for Invoke-RestMethod:ContentType on thi
 
 .EXAMPLE
 Invoke-API get "https://api.ipify.org?format=json"
+
+.EXAMPLE
+Invoke-API post "https://httpbin.org/post" -Payload '{"Id": 12345 }'
 
 .EXAMPLE
 $PSDefaultParameterValues = @{
