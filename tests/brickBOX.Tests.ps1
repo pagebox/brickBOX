@@ -7,17 +7,45 @@ if ($false) {
     $config = New-PesterConfiguration
     $config.Run.Path = ".\tests\"
     $config.CodeCoverage.Enabled = $true
-    $config.CodeCoverage.Path = ".\brickBOX.psm1"
+    $config.CodeCoverage.Path = ".\brickBOX.psm1", ".\public"
+    $config.CodeCoverage.RecursePaths = $true
     $config.Output.Verbosity = "Detailed"
+
+    Import-Module Pester
+    $config = [PesterConfiguration]@{
+        Run = @{ Path = ".\tests\"}
+        CodeCoverage = @{
+            Enabled = $true
+            Path = ".\brickBOX.psm1", ".\public", ".\private"
+            RecursePaths = $true
+            CoveragePercentTarget = 100
+        }
+        Output = @{ Verbosity = 'Detailed'}
+    }
     Invoke-Pester -Configuration $config
 }
 
 BeforeAll {
+    Remove-Module brickBOX
     Import-Module .\brickBOX.psm1 -Force
     $PSDefaultParameterValues = $null
+    $Global:PSDefaultParameterValues = $null
+
 }
 
 Describe 'Test ScriptProcessing' {
+    Context 'Format-Bytes' {
+        It 'should be converted correctly' {
+            20 | Format-Bytes | Should -Be '20 B'
+            1kb | Format-Bytes | Should -Be '1.00 KB'
+            1kb + 512 | Format-Bytes | Should -Be '1.50 KB'
+            1mb | Format-Bytes | Should -Be '1.00 MB'
+            1gb | Format-Bytes | Should -Be '1.00 GB'
+            1tb | Format-Bytes | Should -Be '1.00 TB'
+            1pb | Format-Bytes | Should -Be '1.00 PB'
+            1pb | Format-Bytes | Should -Be '1.00 PB'
+        }
+    }
     Context 'Test-Admin' {
         It 'Should be of type Boolean' {
             Test-Admin | Should -BeOfType Boolean
@@ -166,6 +194,18 @@ Describe 'Test API' {
         It 'Invoke simple POST to public api' {
             $apiContent = Invoke-API post "https://httpbin.org/post" -Payload '{"Id": 12345 }'
             $apiContent.data | Should -Not -BeNullOrEmpty
+        }
+        It 'Invoke simple POST to public api with $PSDefaultParameterValues' {
+            $Global:PSDefaultParameterValues = @{
+                "Invoke-RestMethod:Headers"= @{
+                    'Accept' = "application/json"
+                    'customHeader' = 'byDefParam'
+                }
+                "Invoke-RestMethod:ContentType"="application/json; charset=utf-8"
+            }
+            $apiContent = Invoke-API post "https://httpbin.org/post" -Payload '{"Id": 12345 }'
+            $apiContent.headers.customHeader | Should -be 'byDefParam'
+            $Global:PSDefaultParameterValues = $null
         }
         It 'Mock ServiceNow payload' {
             Mock -ModuleName brickBOX -CommandName Invoke-RestMethod -MockWith {return @{'result' = 'ServiceNow'}}

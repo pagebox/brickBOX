@@ -56,5 +56,5 @@ Invoke-Pester -Configuration $config
 
 ## Upload Package to PowerShell Gallery
 ``` powershell
-Publish-Module -Name .\brickBOX.psm1 -NuGetApiKey <apiKey>
+Publish-Module -Name .\brickBOX.psm1 -NuGetApiKey (Get-Secret 'powershellgallery' 'ApiKey' -AsPlainText)
 ```
