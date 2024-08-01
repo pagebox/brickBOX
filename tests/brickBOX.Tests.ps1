@@ -1,36 +1,16 @@
-if ($false) {
-    Get-Module brickBOX | Format-Table Name,Version,Path # expect something like "brickBOX 0.0 C:\Data\brickBOX\brickBOX.psm1"
-    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1
-    Invoke-Pester -Output Detailed .\tests\brickBOX.Tests.ps1 -FullNameFilter 'Set-Secret, Get-Secret, Clear-Secret'
-
-    # Code Coverage
-    $config = New-PesterConfiguration
-    $config.Run.Path = ".\tests\"
-    $config.CodeCoverage.Enabled = $true
-    $config.CodeCoverage.Path = ".\brickBOX.psm1", ".\public"
-    $config.CodeCoverage.RecursePaths = $true
-    $config.Output.Verbosity = "Detailed"
-
-    Import-Module Pester
-    $config = [PesterConfiguration]@{
-        Run = @{ Path = ".\tests\"}
-        CodeCoverage = @{
-            Enabled = $true
-            Path = ".\brickBOX.psm1", ".\public", ".\private"
-            RecursePaths = $true
-            CoveragePercentTarget = 100
-        }
-        Output = @{ Verbosity = 'Detailed'}
-    }
-    Invoke-Pester -Configuration $config
-}
-
 BeforeAll {
-    Remove-Module brickBOX
+    Remove-Module brickBOX -Force
     Import-Module .\brickBOX.psm1 -Force
     $PSDefaultParameterValues = $null
     $Global:PSDefaultParameterValues = $null
 
+}
+
+Describe 'Test TestEnvironment' {
+    It 'Test module should be loaded' {
+        (Get-Module brickBOX ).count | Should -Be 1
+        (Get-Module brickBOX ).Version | Should -Be '0.0'
+    }
 }
 
 Describe 'Test ScriptProcessing' {
@@ -52,7 +32,7 @@ Describe 'Test ScriptProcessing' {
         }
     }
     Context 'Start-Elevated' {
-        It 'Start-Elevated should not crash' {
+        It 'should not throw' {
             Mock -ModuleName brickBOX -CommandName Test-Admin -MockWith {return $false}
             Mock -ModuleName brickBOX -CommandName Start-Process 
 
@@ -64,7 +44,7 @@ Describe 'Test ScriptProcessing' {
             Set-Secret 'pester' 'keyWhatIf' 'password' -WhatIf
             (Get-ItemProperty 'HKCU:\SOFTWARE\pageBOX\Secret\pester\' -ErrorAction SilentlyContinue).PSObject.Properties.Name -contains 'keyWhatIf' | Should -BeFalse
         }
-        It 'Set-Secret should not throw exception' {
+        It 'should not throw' {
             {Set-Secret 'pester' 'key' 'test'} | Should -Not -Throw
         }
         It 'Saved secret in the registry should exist as type of SecureString and not PlainText' {
@@ -112,6 +92,46 @@ Describe 'Test ScriptProcessing' {
             Get-Item -Path "HKCU:\Software\pageBOX\Secret\pester" -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
         }
     }
+    Context 'ConvertTo-Markdown' {
+        BeforeAll {
+            $oMD = @(
+                [PSCustomObject]@{ID = 1;Name = 'page'}
+                [PSCustomObject]@{ID = 2;}
+                [PSCustomObject]@{ID = 3;Name = $null}
+                [PSCustomObject]@{ID = 4;Name = "Name`r`nNewLine"}
+                )
+        }
+        It 'Should not throw' {
+            { ConvertTo-Markdown $oMD } | Should -Not -Throw
+        }
+        It 'Should render perfectly' {
+            $md = ConvertTo-Markdown $oMD
+            $md | Should -Contain 'ID | Name        '
+            $md | Should -Contain '-: | ------------'
+            $md | Should -Contain ' 1 | page        '
+            $md | Should -Contain ' 2 |             '
+             $md | Should -Contain ' 3 |             '
+            $md | Should -Contain ' 4 | Name NewLine'
+        }
+    }
+    Context 'ConvertTo-Base64' {
+        It 'simple convert' {
+            ConvertTo-Base64 'Chuchichäschtli' | Should -be 'Q2h1Y2hpY2jDpHNjaHRsaQ=='
+        }
+        It 'convert with -Encoding Unicode' {
+            ConvertTo-Base64 'Chuchichäschtli' -Encoding ([text.encoding]::Unicode) | Should -be 'QwBoAHUAYwBoAGkAYwBoAOQAcwBjAGgAdABsAGkA'
+        }
+    }
+    Context 'ConvertFrom-Base64' {
+        It 'simple revert' {
+            ConvertFrom-Base64 'Q2h1Y2hpY2jDpHNjaHRsaQ==' | Should -be 'Chuchichäschtli'
+        }
+        It 'simple revert' {
+            ConvertFrom-Base64 'QwBoAHUAYwBoAGkAYwBoAOQAcwBjAGgAdABsAGkA' -Encoding ([text.encoding]::Unicode) | Should -be 'Chuchichäschtli'
+        }
+    }
+
+
     AfterAll {
         Remove-Item HKCU:\SOFTWARE\pageBOX\Secret\pester\ -ErrorAction SilentlyContinue
     }
@@ -177,7 +197,64 @@ Favorite=Black
             $iniSample -imatch 'Favorite=Raspberry(?s)(.*)\[Flavor]' | Should -Not -BeTrue
         }
     }
+    Context 'Get-LatestWriteTime' {
+        It 'should not throw' {
+            {Get-LatestWriteTime '.'} | Should -Not -Throw
+        }
+    }
 
+}
+
+Describe 'Test Network' {
+    Context 'Convert-IPCalc' {
+        It 'Simple calc' {
+            $ip = Convert-IPCalc 10.10.100.5/24
+            $ip.Address     | Should -be '10.10.100.5'
+            $ip.Netmask     | Should -be '255.255.255.0'
+            $ip.Wildcard    | Should -be '0.0.0.255'
+            $ip.Network     | Should -be '10.10.100.0/24'
+            $ip.Broadcast   | Should -be '10.10.100.255'
+            $ip.HostMin     | Should -be '10.10.100.1'
+            $ip.HostMax     | Should -be '10.10.100.254'
+            $ip.'Hosts/Net' | Should -be '254'
+            $ip.AddressBinary   | Should -Be $null
+        }
+        It 'Simple calc with /32' {
+            $ip = Convert-IPCalc 10.10.100.5/32
+            $ip.Address     | Should -be '10.10.100.5'
+            $ip.Netmask     | Should -be '255.255.255.255'
+            $ip.Wildcard    | Should -be '0.0.0.0'
+            $ip.Network     | Should -be '10.10.100.5/32'
+            $ip.Broadcast   | Should -be '10.10.100.5'
+            $ip.HostMin     | Should -be '10.10.100.5'
+            $ip.HostMax     | Should -be '10.10.100.5'
+            $ip.'Hosts/Net' | Should -be '1'
+            $ip.AddressBinary   | Should -Be $null
+        }
+        It 'Calc with IncludeBinaryOutput' {
+            $ip = Convert-IPCalc 10.10.100.5/24 -IncludeBinaryOutput
+            $ip.AddressBinary   | Should -Be '00001010000010100110010000000101'
+            $ip.NetmaskBinary   | Should -Be '11111111111111111111111100000000'
+            $ip.WildcardBinary  | Should -Be '00000000000000000000000011111111'
+            $ip.NetworkBinary   | Should -Be '00001010000010100110010000000000'
+            $ip.HostMinBinary   | Should -Be '00001010000010100110010000000001'
+            $ip.HostMaxBinary   | Should -Be '00001010000010100110010011111110'
+            $ip.BroadcastBinary | Should -Be '00001010000010100110010011111111'
+        }
+        It 'Test Subnet Mask' {
+            { Convert-IPCalc 10.10.100.5 } | Should -Throw
+            { Convert-IPCalc 10.10.100.5/33 } | Should -Throw
+            { Convert-IPCalc 10.10.100.5/abc } | Should -Throw
+            { Convert-IPCalc 10.10.100.5/-10 } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '0.0.0.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '257.0.0.0' } | Should -Throw
+            #{ Convert-IPCalc 10.10.100.5 -Netmask 'abc.0.0.0' } | Should -Throw
+        }
+        It 'Test IP Address' {
+            { Convert-IPCalc 257.10.100.5/24 } | Should -Throw
+            { Convert-IPCalc 257.10.100.5/32 } | Should -Throw
+        }
+    }
 }
 
 Describe 'Test API' {

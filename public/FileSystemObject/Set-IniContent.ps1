@@ -2,6 +2,8 @@ function Set-IniContent {
     <#
     .SYNOPSIS
         Add or Update key-value pairs in ini-files
+    .COMPONENT
+        FileSystemObject
     .EXAMPLE
         $payload = Set-IniContent $payload 'color' 'red' 
         sets the color=red in an ini-like content of $payload.
@@ -13,7 +15,6 @@ function Set-IniContent {
         [Parameter()][string]$section = "",
         [switch]$uncomment = $false
     )
-    
     Process{
         [String]$ini = ""
         [String]$cSection = "" # Current Section

@@ -1,6 +1,21 @@
-
 Function Format-Bytes {
-    # inspired by https://theposhwolf.com/howtos/Format-Bytes/
+    <#
+    .SYNOPSIS
+        Formats a number to a byte size value
+    .COMPONENT
+        FileSystemObject
+    .EXAMPLE
+        Format-Bytes 2000
+        
+        returns "1.95 KB"
+    .EXAMPLE
+        2000 | Format-Bytes 
+        
+        returns "1.95 KB"
+    .NOTES
+        Inspired by https://theposhwolf.com/howtos/Format-Bytes/
+    #>
+    [CmdletBinding()]
     Param (
         [Parameter(ValueFromPipeline = $true)][ValidateNotNullOrEmpty()][float]$number
     )

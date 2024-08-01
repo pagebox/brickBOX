@@ -5,6 +5,18 @@ A collection of powershell functions, put in a module to make scripting easier.
 The project is available on [PowerShell Gallery](https://www.powershellgallery.com/packages/brickBOX).
 
 
+
+
+
+🔥 https://poshcode.gitbook.io/powershell-practice-and-style/style-guide/introduction
+
+
+
+
+
+
+
+
 ## Installation
 
 ``` powershell
@@ -26,6 +38,7 @@ Clear-Secret            | Removes secure strings from hkcu.
 Set-IniContent          | Add or Update key-value pairs in ini-files  
 Get-BasicAuthForHeader  | Creates the content of the value for the 'Authorization' Property.
 Invoke-API              | Simplifies Invoke-RestMethod  
+
 
 
 ## Testing
