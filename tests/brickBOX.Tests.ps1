@@ -99,7 +99,8 @@ Describe 'Test ScriptProcessing' {
                 [PSCustomObject]@{ID = 2;}
                 [PSCustomObject]@{ID = 3;Name = $null}
                 [PSCustomObject]@{ID = 4;Name = "Name`r`nNewLine"}
-                )
+            )
+            if ($oMD){} # ⚠️ false positive warning: variable assigned, but never used
         }
         It 'Should not throw' {
             { ConvertTo-Markdown $oMD } | Should -Not -Throw
@@ -149,7 +150,7 @@ first=second=off
 [colors]
 Favorite=Black
 "@
-
+        if ($iniSample){} # ⚠️ false positive warning: variable assigned, but never used
     }
     Context 'Set-IniContent: Simple content, without Section' {
         It 'Change Value' {
