@@ -23,19 +23,19 @@
         [switch]$IncludeBinaryOutput
     )
     process {
-        # Function to convert IP address string to binary
+        # Function to convert IP address string to binary: "1.2.3.4" => "00000001000000100000001100000100"
         function toBinary ($dottedDecimal) {
             $dottedDecimal.split(".") | ForEach-Object { $binary += $([convert]::toString($_,2).padleft(8,"0")) }
             return $binary
         }
 
-        # Function to binary IP address to dotted decimal string
+        # Function to convert binary IP address to dotted decimal string: "00000001000000100000001100000100" => "1.2.3.4"
         function toDottedDecimal ($binary) {
             do { $dottedDecimal += ".$([string]$([convert]::toInt32($binary.substring($i,8),2)))"; $i+=8 } while ($i -le 24)
             return $dottedDecimal.substring(1)
         }
 
-        # Function to convert CIDR format to binary
+        # Function to convert CIDR format to binary: 24 => "11111111111111111111111100000000"
         function CidrToBin ($cidr) {
             if($cidr -le 32) {
                 [Int[]]$array = (1..32)
@@ -46,7 +46,7 @@
             return $array -join ""
         }
 
-        # Function to convert network mask to wildcard format
+        # Function to convert network mask to wildcard format: "11111111111111111111111100000000" => 00000000000000000000000011111111
         function NetMasktoWildcard ($wildcard) {
             foreach ($bit in [char[]]$wildcard) {
                 if ($bit -eq "1") { $wildcardmask += "0" } 
@@ -54,6 +54,17 @@
             }
             return $wildcardmask
         }
+
+
+        [Convert]::ToInt64('000010000000001111101000100010', 2)
+        [Convert]::ToString(33618467,2)
+
+        
+
+
+
+
+
 
         # Check to see if the IP Address was entered in CIDR format.
         if ($IPAddress -like "*/*") {
@@ -86,29 +97,29 @@
             if (($smBinary.length -ne 32) -or ($smBinary.substring($netBits).contains("1"))) { throw "Subnet Mask is invalid!" } # Validate the subnet mask
             if ($ipBinary.length -ne 32) { throw "IP Address is invalid!" } # Validate the IP address
             #identify subnet boundaries
-            $networkID = toDottedDecimal $($ipBinary.substring(0,$netBits).padright(32,"0"))
             $networkIDbinary = $ipBinary.substring(0,$netBits).padright(32,"0")
-            $firstAddress = toDottedDecimal $($ipBinary.substring(0,$netBits).padright(31,"0") + "1")
+            $networkID = toDottedDecimal $networkIDbinary
             $firstAddressBinary = $($ipBinary.substring(0,$netBits).padright(31,"0") + "1")
-            $lastAddress = toDottedDecimal $($ipBinary.substring(0,$netBits).padright(31,"1") + "0")
+            $firstAddress = toDottedDecimal $firstAddressBinary
             $lastAddressBinary = $($ipBinary.substring(0,$netBits).padright(31,"1") + "0")
-            $broadCast = toDottedDecimal $($ipBinary.substring(0,$netBits).padright(32,"1"))
+            $lastAddress = toDottedDecimal $lastAddressBinary
             $broadCastbinary = $ipBinary.substring(0,$netBits).padright(32,"1")
-            $wildcard = toDottedDecimal ($wildcardbinary)
+            $broadCast = toDottedDecimal $broadCastbinary
+            $wildcard = toDottedDecimal $wildcardbinary
             $Hostspernet = ([convert]::ToInt32($broadCastbinary,2) - [convert]::ToInt32($networkIDbinary,2)) - 1
 
         } else { # Subnet mask is 32 (CIDR)
             if($ipBinary.length -ne 32) { throw "IP Address is invalid!" } # Validate the IP address
             #identify subnet boundaries
-            $networkID = toDottedDecimal $($ipBinary)
+            $networkID = toDottedDecimal $ipBinary
             $networkIDbinary = $ipBinary
-            $firstAddress = toDottedDecimal $($ipBinary)
+            $firstAddress = toDottedDecimal $ipBinary
             $firstAddressBinary = $ipBinary
-            $lastAddress = toDottedDecimal $($ipBinary)
+            $lastAddress = toDottedDecimal $ipBinary
             $lastAddressBinary = $ipBinary
-            $broadCast = toDottedDecimal $($ipBinary)
+            $broadCast = toDottedDecimal $ipBinary
             $broadCastbinary = $ipBinary
-            $wildcard = toDottedDecimal ($wildcardbinary)
+            $wildcard = toDottedDecimal $wildcardbinary
             $Hostspernet = 1
             $cidr = 32
         }
