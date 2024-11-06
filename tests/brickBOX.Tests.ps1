@@ -1,6 +1,6 @@
 BeforeAll {
     Remove-Module brickBOX -Force
-    Import-Module .\brickBOX.psm1 -Force
+    Import-Module $PSScriptRoot\..\brickBOX.psm1 -Force
     $PSDefaultParameterValues = $null
     $Global:PSDefaultParameterValues = $null
 
@@ -131,7 +131,12 @@ Describe 'Test ScriptProcessing' {
             ConvertFrom-Base64 'QwBoAHUAYwBoAGkAYwBoAOQAcwBjAGgAdABsAGkA' -Encoding ([text.encoding]::Unicode) | Should -be 'Chuchichäschtli'
         }
     }
-
+    Context 'Set-RepeatingScheduledTask' {
+        It 'Create TaskSchedule' {
+            Mock -ModuleName brickBOX -CommandName Register-ScheduledTask -MockWith {return ''}
+            { Set-RepeatingScheduledTask -ScriptFile (Get-Item $PSScriptRoot\..\brickBOX.psm1) -TaskPath 'test' -User "$env:COMPUTERNAME\$env:USERNAME" -Password (ConvertTo-SecureString "chuchichäschtli" -AsPlainText) } | Should -Not -Throw
+        }
+    }
 
     AfterAll {
         Remove-Item HKCU:\SOFTWARE\pageBOX\Secret\pester\ -ErrorAction SilentlyContinue
@@ -241,6 +246,11 @@ Describe 'Test Network' {
             $ip.HostMinBinary   | Should -Be '00001010000010100110010000000001'
             $ip.HostMaxBinary   | Should -Be '00001010000010100110010011111110'
             $ip.BroadcastBinary | Should -Be '00001010000010100110010011111111'
+        }
+        It 'Calc with IncludeHostList' {
+            $ip = Convert-IPCalc 10.10.100.5/26 -IncludeHostList
+            $ip.'Hosts/Net' -eq $ip.HostList.Count | Should -BeTrue
+            $ip.HostList[2] | Should -be '10.10.100.3'
         }
         It 'Test Subnet Mask' {
             { Convert-IPCalc 10.10.100.5 } | Should -Throw

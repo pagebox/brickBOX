@@ -5,13 +5,13 @@ function Set-RepeatingScheduledTask {
     .COMPONENT
     ScriptProcessing
     .EXAMPLE
-    Set-RepeatingScheduledTask -ScriptFile (Get-Item '.\test.ps1') -User "$env:COMPUTERNAME\page" -Password (Get-Secret 'localWS' 'page')
+    Set-RepeatingScheduledTask -ScriptFile (Get-Item '.\test.ps1') -User "$env:COMPUTERNAME\$env:USERNAME" -Password (Get-Secret 'localWS' $env:USERNAME)
     .EXAMPLE
     $params = @{
         ScriptFile = Get-Item '.\test.ps1'
         ScriptParam = '-ALL'
-        User = "$env:COMPUTERNAME\page"
-        Password = Get-Secret 'localWS' 'page'
+        User = "$env:COMPUTERNAME\$env:USERNAME"
+        Password = Get-Secret 'localWS' $env:USERNAME
         TaskName = 'test script'
         TaskPath = "\page\"
         RepetitionInterval = (New-TimeSpan -Hours 12)

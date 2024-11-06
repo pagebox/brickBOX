@@ -10,6 +10,8 @@
         Convert-IPCalc -IPAddress 10.100.100.1 -NetMask 255.255.255.0 
     .EXAMPLE
         Convert-IPCalc 192.168.0.1/24 -IncludeBinaryOutput
+    .EXAMPLE
+        Convert-IPCalc 192.168.0.1/24 -IncludeHostList
     .NOTES
         Inspired by Jason Wasser
     #>
@@ -20,7 +22,10 @@
         # Enter the subnet mask information in dotted decimal form.
         [Parameter(Mandatory=$False,Position=2)][string]$Netmask,
         # Include the binary format of the subnet information.
-        [switch]$IncludeBinaryOutput
+        [switch]$IncludeBinaryOutput,
+        # Include List of all hosts.
+        [switch]$IncludeHostList
+
     )
     process {
         # Function to convert IP address string to binary: "1.2.3.4" => "00000001000000100000001100000100"
@@ -54,16 +59,6 @@
             }
             return $wildcardmask
         }
-
-
-        [Convert]::ToInt64('000010000000001111101000100010', 2)
-        [Convert]::ToString(33618467,2)
-
-        
-
-
-
-
 
 
         # Check to see if the IP Address was entered in CIDR format.
@@ -143,6 +138,13 @@
             $Output | Add-Member -MemberType NoteProperty -Name 'HostMinBinary' -Value $firstAddressBinary
             $Output | Add-Member -MemberType NoteProperty -Name 'HostMaxBinary' -Value $lastAddressBinary
             $Output | Add-Member -MemberType NoteProperty -Name 'BroadcastBinary' -Value $broadCastbinary
+        }
+        if ($IncludeHostList) {
+            $hostList = New-Object System.Collections.Generic.List[System.Object]  # @()
+            for ($ip = [Convert]::ToInt64($firstAddressBinary, 2); $ip -le [Convert]::ToInt64($lastAddressBinary, 2); $ip++) {
+                $hostList.Add((toDottedDecimal ([Convert]::ToString($ip,2)).padleft(32,"0")))
+            }
+            $Output | Add-Member -MemberType NoteProperty -Name 'HostList' -Value $hostList
         }
         $Output
     }
