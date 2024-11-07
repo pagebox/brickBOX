@@ -21,14 +21,11 @@ $config = [PesterConfiguration]@{
 Invoke-Pester -Configuration $config
 
 
-
+# 📝 Write Function-Markdown-Table
 $cmdlts = (get-module brickBOX).ExportedCommands.Values | ForEach-Object {
-    # Write-Host $_.Name
     get-help $_.Name | Select-Object Name,@{Name = 'Description'; Expression = {$_.details.description.Text}},Component, @{Name = 'Noun'; Expression = {$_.Name.Split('-')[1]}}
 
 } | Sort-Object Noun | Sort-Object Component | Select-Object Name,Description,Component
 $cmdlts | ConvertTo-Markdown
-#$cmdlts | Select-Object Name,Description | ConvertTo-Markdown
-
 
 

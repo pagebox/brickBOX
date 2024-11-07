@@ -27,13 +27,21 @@ PowerShellVersion = '5.1'       # Minimum version of the PowerShell engine requi
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Test-Admin',
-    'Start-Elevated',
-    'Set-Secret',
-    'Get-Secret',
-    'Clear-Secret',
+    'Invoke-API',
+    'Get-BasicAuthForHeader',
+    'Format-Bytes',
     'Set-IniContent',
-    'Invoke-API'
+    'Get-LatestWriteTime',
+    'Convert-IPCalc',
+    'Test-Admin',
+    'ConvertFrom-Base64',
+    'ConvertTo-Base64',
+    'Start-Elevated',
+    'ConvertTo-Markdown',
+    'Set-RepeatingScheduledTask',
+    'Clear-Secret',
+    'Get-Secret',
+    'Set-Secret'
 )
 
 CmdletsToExport = @()           # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

@@ -1,4 +1,4 @@
-# Testing
+# Testing & Publishing
 
 ## Install Pester
 
@@ -13,8 +13,17 @@ Import-Module Pester -Passthru
 .\test-module.ps1
 ```
 
+## Publishing preparation
 
-# Upload Module to PowerShell Gallery
+- copy the function-markdown-table to `README.md`
+- update `brickBOX.psd1`
+  - update `ModuleVersion`
+  - update `FunctionsToExport`
+- complete pull request
+- Upload Module to PowerShell Gallery
+
+
+## Upload Module to PowerShell Gallery
 ``` powershell
 Publish-Module -Name .\brickBOX.psm1 -NuGetApiKey (Get-Secret 'powershellgallery' 'ApiKey' -AsPlainText)
 ```
