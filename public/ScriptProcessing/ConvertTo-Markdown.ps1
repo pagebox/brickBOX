@@ -49,6 +49,8 @@ Function ConvertTo-Markdown {
         }
     }
     End {
+        if ($null -eq $InputObject) { return '' } # Write-Error "InputObject is null"
+
         $header = @()
         ($InputObject[0].PSObject.Properties).Name | ForEach-Object {
             $header += $_.PadRight($maxColLenght[$_])

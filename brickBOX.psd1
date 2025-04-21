@@ -1,17 +1,17 @@
 @{
 
 RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
-ModuleVersion = '2.0.1'         # Version number of this module.
+ModuleVersion = '2.0.2'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
 
 Author = 'Patrick Page Gehrig'
 CompanyName = 'pageBOX.ch'
-Copyright = '(c) 2024 Patrick Page Gehrig. All rights reserved.'
+Copyright = '(c) 2025 Patrick Page Gehrig. All rights reserved.'
 
 Description = 'A collection of powershell functions, put in a module to make scripting easier'
 
-PowerShellVersion = '5.1'       # Minimum version of the PowerShell engine required by this module
+PowerShellVersion = '7.0'       # Minimum version of the PowerShell engine required by this module
 # PowerShellHostName = 'ConsoleHost' # Name of the PowerShell host required by this module. $host.name
 # PowerShellHostVersion = ''    # Minimum version of the PowerShell host required by this module
 # DotNetFrameworkVersion = ''   # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
