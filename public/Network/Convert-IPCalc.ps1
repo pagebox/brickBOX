@@ -30,14 +30,16 @@
     process {
         # Function to convert IP address string to binary: "1.2.3.4" => "00000001000000100000001100000100"
         function toBinary ($dottedDecimal) {
+            $binary = ""
             $dottedDecimal.split(".") | ForEach-Object { $binary += $([convert]::toString($_,2).padleft(8,"0")) }
             return $binary
         }
 
         # Function to convert binary IP address to dotted decimal string: "00000001000000100000001100000100" => "1.2.3.4"
         function toDottedDecimal ($binary) {
-            do { $dottedDecimal += ".$([string]$([convert]::toInt32($binary.substring($i,8),2)))"; $i+=8 } while ($i -le 24)
-            return $dottedDecimal.substring(1)
+            $dottedDecimal = @()
+            0..3 | ForEach-Object { $dottedDecimal += [string]$([convert]::toInt32($binary.substring($_ * 8, 8), 2)) }
+            return ($dottedDecimal -join ".")
         }
 
         # Function to convert CIDR format to binary: 24 => "11111111111111111111111100000000"
