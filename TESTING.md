@@ -4,7 +4,6 @@
 
 ``` powershell
 Install-Module Pester -Force -Scope AllUsers
-Import-Module Pester -Passthru
 ```
 
 ## Perform Tests with Code Coverage

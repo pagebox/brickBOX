@@ -111,8 +111,11 @@ Describe 'Test ScriptProcessing' {
             $md | Should -Contain '-: | ------------'
             $md | Should -Contain ' 1 | page        '
             $md | Should -Contain ' 2 |             '
-             $md | Should -Contain ' 3 |             '
+            $md | Should -Contain ' 3 |             '
             $md | Should -Contain ' 4 | Name NewLine'
+        }
+        It 'Should return empty string' {
+           $oMD | Where-Object Name -EQ 'DoesNotExist' | ConvertTo-Markdown | Should -Be ''
         }
     }
     Context 'ConvertTo-Base64' {
