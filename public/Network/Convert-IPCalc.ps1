@@ -30,16 +30,19 @@
     process {
         # Function to convert IP address string to binary: "1.2.3.4" => "00000001000000100000001100000100"
         function toBinary ($dottedDecimal) {
-            $binary = ""
-            $dottedDecimal.split(".") | ForEach-Object { $binary += $([convert]::toString($_,2).padleft(8,"0")) }
-            return $binary
+            return ($dottedDecimal -split "\." | ForEach-Object { [convert]::ToString($_,2).padleft(8,"0") }) -join ""
+        }
+
+        # Function to convert IP address to Int32: "1.2.3.4" => 16909060
+        function toInt32 ([IPAddress]$ip) {
+            $bytes = $ip.GetAddressBytes()
+            if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($bytes)}
+            return [BitConverter]::ToUInt32($bytes, 0)
         }
 
         # Function to convert binary IP address to dotted decimal string: "00000001000000100000001100000100" => "1.2.3.4"
         function toDottedDecimal ($binary) {
-            $dottedDecimal = @()
-            0..3 | ForEach-Object { $dottedDecimal += [string]$([convert]::toInt32($binary.substring($_ * 8, 8), 2)) }
-            return ($dottedDecimal -join ".")
+            return (0..3 | ForEach-Object { [string]$([convert]::toInt32($binary.substring($_ * 8, 8), 2)) }) -join "."
         }
 
         # Function to convert CIDR format to binary: 24 => "11111111111111111111111100000000"
@@ -63,29 +66,32 @@
         }
 
 
-        # Check to see if the IP Address was entered in CIDR format.
-        if ($IPAddress -like "*/*") {
-            $CIDRIPAddress = $IPAddress
-            $IPAddress = $CIDRIPAddress.Split("/")[0]
-            $cidr = [convert]::ToInt32($CIDRIPAddress.Split("/")[1])
-            if ($cidr -in 1..32 ) {
-                $ipBinary = toBinary $IPAddress
-                Write-Verbose $ipBinary
-                $smBinary = CidrToBin($cidr)
-                Write-Verbose $smBinary
-                $Netmask = toDottedDecimal($smBinary)
-                $wildcardbinary = NetMasktoWildcard ($smBinary)
-            } else { throw "Subnet Mask is invalid!" }
-        } else { # Address was not entered in CIDR format.
-            if (!$Netmask) { throw 'Subnet Mask is missing!' }
-            $ipBinary = toBinary $IPAddress
-            if ($Netmask -eq "0.0.0.0") { throw "Subnet Mask is invalid!" }
-            else {
-                $smBinary = toBinary $Netmask
-                $wildcardbinary = NetMasktoWildcard ($smBinary)
-            }
+        # Check the IP Address format. 
+        if ($IPAddress -match '^(?<ip>([0-9]{1,3}\.){3}[0-9]{1,3})(/(?<cidr>[1-9]|[12][0-9]|3[012]))?$') { 
+            $IPAddress = $Matches['ip'] 
+        } else { 
+            throw 'The input of the IP Address is invalid!' 
+        }
+        $cidr = [convert]::ToInt32($Matches['cidr'])
+
+        # check if IP Address is valid.
+        $IPAddress.split(".") | ForEach-Object {
+            if ([int]$_ -lt 0 -or [int]$_ -gt 255) { throw "IP Address is invalid!" }
+        }
+        
+        # check, if the Netmask and CIDR are both set.
+        if ($Netmask -and $cidr -gt 0) { throw 'You can not set both Netmask and CIDR!' }
+        
+        # check if Netmask is valid.
+        $Netmask.split(".") | ForEach-Object {
+            if ([int]$_ -lt 0 -or [int]$_ -gt 255) { throw "Netmask is invalid!" }
         }
 
+
+        $ipBinary = toBinary $IPAddress
+        $smBinary = if ($Netmask) { toBinary $Netmask } else { CidrToBin($cidr) }
+        if (!$Netmask) { $Netmask = toDottedDecimal($smBinary) }
+        $wildcardbinary = NetMasktoWildcard ($smBinary)
         $netBits = $smBinary.indexOf("0") # First determine the location of the first zero in the subnet mask in binary (if any)
 
         # If there is a 0 found then the subnet mask is less than 32 (CIDR).
@@ -124,6 +130,7 @@
         # Output custom object with or without binary information.
         $Output = [PSCustomObject]@{
             Address = $IPAddress
+            Address32 = toInt32 ([IPAddress]$IPAddress)
             Netmask = $Netmask
             Wildcard = $wildcard
             Network = "$networkID/$cidr"
