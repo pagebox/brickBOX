@@ -111,8 +111,11 @@ Describe 'Test ScriptProcessing' {
             $md | Should -Contain '-: | ------------'
             $md | Should -Contain ' 1 | page        '
             $md | Should -Contain ' 2 |             '
-             $md | Should -Contain ' 3 |             '
+            $md | Should -Contain ' 3 |             '
             $md | Should -Contain ' 4 | Name NewLine'
+        }
+        It 'Should return empty string' {
+           $oMD | Where-Object Name -EQ 'DoesNotExist' | ConvertTo-Markdown | Should -Be ''
         }
     }
     Context 'ConvertTo-Base64' {
@@ -215,55 +218,67 @@ Describe 'Test Network' {
     Context 'Convert-IPCalc' {
         It 'Simple calc' {
             $ip = Convert-IPCalc 10.10.100.5/24
-            $ip.Address     | Should -be '10.10.100.5'
-            $ip.Netmask     | Should -be '255.255.255.0'
-            $ip.Wildcard    | Should -be '0.0.0.255'
-            $ip.Network     | Should -be '10.10.100.0/24'
-            $ip.Broadcast   | Should -be '10.10.100.255'
-            $ip.HostMin     | Should -be '10.10.100.1'
-            $ip.HostMax     | Should -be '10.10.100.254'
-            $ip.'Hosts/Net' | Should -be '254'
+            $ip.Address         | Should -be '10.10.100.5'
+            $ip.Address32       | Should -be 168453125
+            $ip.Netmask         | Should -be '255.255.255.0'
+            $ip.Wildcard        | Should -be '0.0.0.255'
+            $ip.Network         | Should -be '10.10.100.0/24'
+            $ip.Broadcast       | Should -be '10.10.100.255'
+            $ip.HostMin         | Should -be '10.10.100.1'
+            $ip.HostMax         | Should -be '10.10.100.254'
+            $ip.'Hosts/Net'     | Should -be '254'
             $ip.AddressBinary   | Should -Be $null
         }
         It 'Simple calc with /32' {
-            $ip = Convert-IPCalc 10.10.100.5/32
-            $ip.Address     | Should -be '10.10.100.5'
-            $ip.Netmask     | Should -be '255.255.255.255'
-            $ip.Wildcard    | Should -be '0.0.0.0'
-            $ip.Network     | Should -be '10.10.100.5/32'
-            $ip.Broadcast   | Should -be '10.10.100.5'
-            $ip.HostMin     | Should -be '10.10.100.5'
-            $ip.HostMax     | Should -be '10.10.100.5'
-            $ip.'Hosts/Net' | Should -be '1'
-            $ip.AddressBinary   | Should -Be $null
+            $ip = Convert-IPCalc 255.10.100.5/32
+            $ip.Address         | Should -be '255.10.100.5'
+            $ip.Address32       | Should -be 4278871045
+            $ip.Netmask         | Should -be '255.255.255.255'
+            $ip.Wildcard        | Should -be '0.0.0.0'
+            $ip.Network         | Should -be '255.10.100.5/32'
+            $ip.Broadcast       | Should -be '255.10.100.5'
+            $ip.HostMin         | Should -be '255.10.100.5'
+            $ip.HostMax         | Should -be '255.10.100.5'
+            $ip.'Hosts/Net'     | Should -be '1'
+            $ip.AddressBinary   | Should -be $null
         }
         It 'Calc with IncludeBinaryOutput' {
             $ip = Convert-IPCalc 10.10.100.5/24 -IncludeBinaryOutput
-            $ip.AddressBinary   | Should -Be '00001010000010100110010000000101'
-            $ip.NetmaskBinary   | Should -Be '11111111111111111111111100000000'
-            $ip.WildcardBinary  | Should -Be '00000000000000000000000011111111'
-            $ip.NetworkBinary   | Should -Be '00001010000010100110010000000000'
-            $ip.HostMinBinary   | Should -Be '00001010000010100110010000000001'
-            $ip.HostMaxBinary   | Should -Be '00001010000010100110010011111110'
-            $ip.BroadcastBinary | Should -Be '00001010000010100110010011111111'
+            $ip.AddressBinary   | Should -be '00001010000010100110010000000101'
+            $ip.NetmaskBinary   | Should -be '11111111111111111111111100000000'
+            $ip.WildcardBinary  | Should -be '00000000000000000000000011111111'
+            $ip.NetworkBinary   | Should -be '00001010000010100110010000000000'
+            $ip.HostMinBinary   | Should -be '00001010000010100110010000000001'
+            $ip.HostMaxBinary   | Should -be '00001010000010100110010011111110'
+            $ip.BroadcastBinary | Should -be '00001010000010100110010011111111'
         }
         It 'Calc with IncludeHostList' {
             $ip = Convert-IPCalc 10.10.100.5/26 -IncludeHostList
             $ip.'Hosts/Net' -eq $ip.HostList.Count | Should -BeTrue
-            $ip.HostList[2] | Should -be '10.10.100.3'
+            $ip.HostList[2]     | Should -be '10.10.100.3'
+            $ip.HostList[-1]    | Should -be '10.10.100.62'
         }
-        It 'Test Subnet Mask' {
-            { Convert-IPCalc 10.10.100.5 } | Should -Throw
-            { Convert-IPCalc 10.10.100.5/33 } | Should -Throw
-            { Convert-IPCalc 10.10.100.5/abc } | Should -Throw
-            { Convert-IPCalc 10.10.100.5/-10 } | Should -Throw
-            { Convert-IPCalc 10.10.100.5 -Netmask '0.0.0.0' } | Should -Throw
+        It 'Test Subnet Mask & CIDR validation' {
+            { Convert-IPCalc 10.10.100.5 }      | Should -Throw
+            { Convert-IPCalc 10.10.100.5/24 -Netmask '255.255.255.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5/33 }   | Should -Throw
+            { Convert-IPCalc 10.10.100.5/abc }  | Should -Throw
+            { Convert-IPCalc 10.10.100.5/-10 }  | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '0.0.0.0' }   | Should -Throw
             { Convert-IPCalc 10.10.100.5 -Netmask '257.0.0.0' } | Should -Throw
-            #{ Convert-IPCalc 10.10.100.5 -Netmask 'abc.0.0.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '-55.0.0.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '255.255.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '255.0.0.0.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask '255.0.255.0' } | Should -Throw
+            { Convert-IPCalc 10.10.100.5 -Netmask 'abc.0.0.0' } | Should -Throw
         }
         It 'Test IP Address' {
-            { Convert-IPCalc 257.10.100.5/24 } | Should -Throw
-            { Convert-IPCalc 257.10.100.5/32 } | Should -Throw
+            { Convert-IPCalc 257.1.1.5/24 } | Should -Throw
+            { Convert-IPCalc -57.1.1.5/24 } | Should -Throw
+            { Convert-IPCalc abc.1.1.5/24 } | Should -Throw
+            { Convert-IPCalc 1.1.1.1.1/24 } | Should -Throw
+            { Convert-IPCalc 10.10.10/24 }  | Should -Throw
+            { Convert-IPCalc 257.1.1.5/32 } | Should -Throw
         }
     }
 }
