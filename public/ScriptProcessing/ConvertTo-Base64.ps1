@@ -7,14 +7,11 @@ function ConvertTo-Base64 {
     .EXAMPLE
         ConvertTo-Base64 'Chuchichäschtli'
     .EXAMPLE
-        ConvertTo-Base64 'Chuchichäschtli' -Encoding ([text.encoding]::Unicode)
+        'Chuchichäschtli' | ConvertTo-Base64 -Encoding ([System.Text.Encoding]::Unicode)
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$false, HelpUri="https://github.com/pagebox/brickBOX/blob/main/public/ScriptProcessing/ConvertTo-Base64.md")]
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [string]$TextString,
-
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][ValidateNotNull()][string]$TextString,
         [System.Text.Encoding]$Encoding = [System.Text.Encoding]::Utf8
     )
     process {
