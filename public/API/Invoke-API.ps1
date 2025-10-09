@@ -1,30 +1,36 @@
 function Invoke-API {
     <#
     .SYNOPSIS
-        Simplifies Invoke-RestMethod
+        Simplifies Invoke-RestMethod calls
     .COMPONENT
         API
+    .DESCRIPTION
+        This function simplifies Invoke-RestMethod calls for REST APIs.
     .EXAMPLE
-        Invoke-API get "https://api.ipify.org?format=json"
+        PS> Invoke-API get "https://api.ipify.org?format=json"
+
+        ip
+        --
+        178.194.238.xxx
     .EXAMPLE
-        Invoke-API post "https://httpbin.org/post" -Payload '{"Id": 12345 }'
+        PS> Invoke-API post "https://httpbin.org/post" -Payload '{"Id": 12345 }'
     .EXAMPLE
-        $PSDefaultParameterValues = @{
+        PS> $PSDefaultParameterValues = @{
             "Invoke-RestMethod:Headers"= @{
                 'Accept' = "application/json"
                 'Authorization' = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("username:pa$$word")))"
             }
             "Invoke-RestMethod:ContentType"="application/json; charset=utf-8"
         }
-        
-        Invoke-API post "https://reqres.in/api/users" -Payload @"
+        "Invoke-API post "https://reqres.in/api/users" -Payload @"
             {
                 "name": "Julius User",
                 "job": "leader"
             }
         "@
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Invoke-API")]
+    [OutputType([System.Object])]
     param(
         # POST   Create a record
         # GET    Retrieve a record
@@ -76,8 +82,8 @@ function Invoke-API {
         }
         
         if (!$NoOutput) {
-            if ($response.result) { $response.result } # ServiceNOW
-            else { $response }
+            if ($response.result) { return $response.result } # ServiceNOW
+            else { return $response }
         }
     }
 } 

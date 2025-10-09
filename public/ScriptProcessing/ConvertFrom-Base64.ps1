@@ -4,14 +4,21 @@ function ConvertFrom-Base64 {
         Reverts a base64 string into text
     .COMPONENT
         ScriptProcessing
+    .DESCRIPTION
+        This function reverts a base64 encoded string back into its original text form.
     .EXAMPLE
-        ConvertFrom-Base64 'Q2h1Y2hpY2jDpHNjaHRsaQ'
+        PS> ConvertFrom-Base64 'Q2h1Y2hpY2jDpHNjaHRsaQ'
+        
+        Chuchichäschtli
     .EXAMPLE
-        'QwBoAHUAYwBoAGkAYwBoAOQAcwBjAGgAdABsAGkA' | ConvertFrom-Base64 -Encoding ([System.Text.Encoding]::Unicode)
+        PS> 'QwBoAHUAYwBoAGkAYwBoAOQAcwBjAGgAdABsAGkA' | ConvertFrom-Base64 -Encoding ([System.Text.Encoding]::Unicode)
+
+        Chuchichäschtli
     #>
-    [CmdletBinding(SupportsShouldProcess=$false, HelpUri="https://github.com/pagebox/brickBOX/blob/main/public/ScriptProcessing/ConvertFrom-Base64.md")]
+    [CmdletBinding(SupportsShouldProcess = $false, HelpUri="https://github.com/pagebox/brickBOX/wiki/ConvertFrom-Base64")]
+    [OutputType([string])]
     param (
-        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)][ValidateNotNull()][string]$Base64String,
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline = $true)][ValidateNotNullOrEmpty()][string]$Base64String,
         [System.Text.Encoding]$Encoding = [System.Text.Encoding]::Utf8
     )
     process {
@@ -21,6 +28,6 @@ function ConvertFrom-Base64 {
         [string]$padding = '=' * (($Base64String.Length % 4) -eq 0 ? 0 : 4 - ($Base64String.Length % 4))
 
         # [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($Base64String))
-        $Encoding.GetString([Convert]::FromBase64String($Base64String + $padding))
+        return $Encoding.GetString([Convert]::FromBase64String($Base64String + $padding))
     }
 }

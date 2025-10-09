@@ -4,26 +4,27 @@ Function Format-Bytes {
         Formats a number to a byte size value
     .COMPONENT
         FileSystemObject
+    .DESCRIPTION
+        This function formats a number to a byte size value.
     .EXAMPLE
-        Format-Bytes 2000
+        PS> Format-Bytes 2000
         
-        returns "1.95 KB"
+        1.95 KB
     .EXAMPLE
-        2000 | Format-Bytes 
-        
-        returns "1.95 KB"
+        PS> 50000000 | Format-Bytes
+
+        47.68 MB
     .NOTES
         Inspired by https://theposhwolf.com/howtos/Format-Bytes/
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $false, HelpUri="https://github.com/pagebox/brickBOX/wiki/Format-Bytes")]
+    [OutputType([string])]
     Param (
         [Parameter(ValueFromPipeline = $true)][ValidateNotNullOrEmpty()][float]$number
     )
-    Begin {
-        $sizes = 'B','KB','MB','GB','TB','PB'
-    }
     Process {
-        if ($number -lt 1kb) {return "$number B"}
+        $sizes = 'B','KB','MB','GB','TB','PB'
+        if ($number -lt 1kb) { return "$number B" }
         $size = [math]::Log($number,1kb)
         $size = [math]::Floor($size)
         $num = $number / [math]::Pow(1kb,$size)

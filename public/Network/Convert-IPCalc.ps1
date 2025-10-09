@@ -1,21 +1,75 @@
 ﻿Function Convert-IPCalc {
     <#
     .SYNOPSIS
-        Convert-IPCalc calculates the IP subnet information based upon the entered IP address and subnet. 
+        Calculate IP subnet information
     .COMPONENT
         Network
+    .DESCRIPTION
+        This function calculates the IP subnet information based upon the entered IP address and subnet. 
+        It can accept either CIDR notation or a subnet mask in dotted decimal format. 
+        The output includes details such as the network address, broadcast address, host range, and the number of hosts per subnet. 
+        Optional parameters allow for the inclusion of binary representations of the IP addresses and a list of all possible host addresses within the subnet.
     .EXAMPLE
-        Convert-IPCalc 10.10.100.5/24
+        PS> Convert-IPCalc 10.10.100.5/24
+
+        Address   : 10.10.100.5
+        Address32 : 168453125
+        Netmask   : 255.255.255.0
+        Wildcard  : 0.0.0.255
+        Network   : 10.10.100.0/24
+        Broadcast : 10.10.100.255
+        HostMin   : 10.10.100.1
+        HostMax   : 10.10.100.254
+        Hosts/Net : 254
     .EXAMPLE
-        Convert-IPCalc -IPAddress 10.100.100.1 -NetMask 255.255.255.0 
+        PS> Convert-IPCalc -IPAddress 10.100.100.1 -NetMask 255.255.255.0
+
+        Address   : 10.100.100.1
+        Address32 : 174351361
+        Netmask   : 255.255.255.0
+        Wildcard  : 0.0.0.255
+        Network   : 10.100.100.0/24
+        Broadcast : 10.100.100.255
+        HostMin   : 10.100.100.1
+        HostMax   : 10.100.100.254
+        Hosts/Net : 254
     .EXAMPLE
-        Convert-IPCalc 192.168.0.1/24 -IncludeBinaryOutput
+        PS> Convert-IPCalc 192.168.0.1/24 -IncludeBinaryOutput
+
+        Address         : 192.168.0.1
+        Address32       : 3232235521
+        Netmask         : 255.255.255.0
+        Wildcard        : 0.0.0.255
+        Network         : 192.168.0.0/24
+        Broadcast       : 192.168.0.255
+        HostMin         : 192.168.0.1
+        HostMax         : 192.168.0.254
+        Hosts/Net       : 254
+        AddressBinary   : 11000000101010000000000000000001
+        NetmaskBinary   : 11111111111111111111111100000000
+        WildcardBinary  : 00000000000000000000000011111111
+        NetworkBinary   : 11000000101010000000000000000000
+        HostMinBinary   : 11000000101010000000000000000001
+        HostMaxBinary   : 11000000101010000000000011111110
+        BroadcastBinary : 11000000101010000000000011111111
     .EXAMPLE
-        Convert-IPCalc 192.168.0.1/24 -IncludeHostList
+        PS> Convert-IPCalc 192.168.0.1/24 -IncludeHostList
+
+        Address   : 192.168.0.1
+        Address32 : 3232235521
+        Netmask   : 255.255.255.0
+        Wildcard  : 0.0.0.255
+        Network   : 192.168.0.0/24
+        Broadcast : 192.168.0.255
+        HostMin   : 192.168.0.1
+        HostMax   : 192.168.0.254
+        Hosts/Net : 254
+        HostList  : {192.168.0.1, 192.168.0.2, 192.168.0.3, 192.168.0.4…}
     .NOTES
         Inspired by Jason Wasser
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Convert-IPCalc")]
+    [OutputType([PSCustomObject])]
     param (
         # Enter the IP address by itself or with CIDR notation.
         [Parameter(Mandatory=$True,Position=1)][string]$IPAddress,
@@ -145,3 +199,37 @@
         return $Output
     }
 }
+
+# SIG # Begin signature block
+# MIIFsAYJKoZIhvcNAQcCoIIFoTCCBZ0CAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAZfzO0DJumZZJY
+# +elxpDcmghh0D9tkYFzo33nK8qgZoKCCAxwwggMYMIICAKADAgECAhB9XzvMF9qV
+# mE6NV/UQOTeSMA0GCSqGSIb3DQEBCwUAMCQxIjAgBgNVBAMMGXBhZ2VCT1ggQ29k
+# ZSBTaWduaW5nIENlcnQwHhcNMjUwMzAyMTYzODA3WhcNMjYwMzAyMTY1ODA3WjAk
+# MSIwIAYDVQQDDBlwYWdlQk9YIENvZGUgU2lnbmluZyBDZXJ0MIIBIjANBgkqhkiG
+# 9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuUDEhiZHE+UCgzTjpgGWX2yRIRbWBxrG0cos
+# stAM29Euk+IsbqVUlYk9/oOWHTm1G+h1uSJrsdtobERzogZo6RyYxH2wEQN+qaBc
+# 8rn9bc9K+jgnth5mdy4k4VsjVoGVCmjDDSvf1I6iwtvLUgc16KGYp6T/occVu3LD
+# qb90y2H53sw/+0k5V6yuE2SD3lKp3WtM4q51fPLmcsgOB5LjIUQmJV7e9wSMPn4A
+# jGQSOCgUCIEC+2CB22NE7JPKeP2o1euspimz3VhaHMGYJCY98jYGjCgUjA9DBN8k
+# 6h/US1yzlxsZLnnDNGkMQBCjBiTiDZVNSJR7qii7uJaWDo0ruQIDAQABo0YwRDAO
+# BgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwHQYDVR0OBBYEFOYq
+# A5c0jwfTLfmIHxx+TPuJ44jcMA0GCSqGSIb3DQEBCwUAA4IBAQA7b6EZZtvZISJC
+# cE88X9qlaTCUSj0WPfbm90Mj1luN4wQMUrWwSxxMzrrMrXSQBXAA8CCtK02kkeZm
+# I35QTf4wVcwU9rZcTJs/WXwRXUDQw9Er02ILTP6BeE/V8NyQCijEziE2hammMKP7
+# yaE7uCNyDEi+LIVugSlSotZZE2I4ca9cpqYUiYWNMJbiKKMkmvqUMsQegI+CVu3r
+# HPyy7I58ZX2nIJpibGXFAb/8RO/b6H2fQm0Lylx8MHBCeaO0w3W6T9LTKBOlmEs2
+# LJbdYyqkuMh8I/IPlnWRfpRx7CGdBcdWSt8BgTiz7kUaKLhqZPfRQPZeL3+TPNEY
+# Qt9HBhbZMYIB6jCCAeYCAQEwODAkMSIwIAYDVQQDDBlwYWdlQk9YIENvZGUgU2ln
+# bmluZyBDZXJ0AhB9XzvMF9qVmE6NV/UQOTeSMA0GCWCGSAFlAwQCAQUAoIGEMBgG
+# CisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcC
+# AQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIE
+# IHc63Z2FIX6r+5IROsbGwKNa/fnTn/PKj43M2IbbiKATMA0GCSqGSIb3DQEBAQUA
+# BIIBAKQA384XRhpxi7MUlN+9yCSLmSRS/Ih3rsVuvoA/kOJMkE9QP0x4/KueoPjW
+# Clj5zq6QUhg+/YXv/h+YHUprBE0tVXxkvAY+q75STttzcEmgsg0Yf/XVmMwRKP2E
+# ErsN1bvMrwD40TGcLXBJ5EhfRl5O1RzgyQyYa6GDAN2pAvXLN86HKTTPxKNH/vT4
+# uMYTAvyib20eUPcxFVaAqnVeyx9OzMfG9RyzdAyGCkWyixzauJcN1FssYdXKiLKz
+# Ce4IlBC8dIN2kt9xV42gjS1rBm/96+UHoaBjmHENPWOtNd1jtOKDJNB/WI7QQa8M
+# 9D3RWkMBM6/TnXgXoHA7mZJDuZA=
+# SIG # End signature block

@@ -1,22 +1,24 @@
 function Get-BasicAuthForHeader {
     <#
     .SYNOPSIS
-        Creates the content of the value for the 'Authorization' Property.
+        Creates Basic Auth Header Value
     .COMPONENT
         API
+    .DESCRIPTION
+        This function creates the content of the value for the 'Authorization' Property.
     .EXAMPLE
-        Get-BasicAuthForHeader -username 'username' -password (ConvertTo-SecureString "password" -AsPlainText -Force)
+        PS> Get-BasicAuthForHeader -username 'username' -password (ConvertTo-SecureString "password" -AsPlainText -Force)
 
-        returns "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
-        
+        Basic dXNlcm5hbWU6cGFzc3dvcmQ=
     .EXAMPLE
-        $PSDefaultParameterValues = @{
+        PS> $PSDefaultParameterValues = @{
             "Invoke-RestMethod:Headers"= @{
                 'Authorization' = Get-BasicAuthForHeader -username 'username' -password (ConvertTo-SecureString "password" -AsPlainText -Force)
             }
         }
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $false, HelpUri="https://github.com/pagebox/brickBOX/wiki/Get-BasicAuthForHeader")]
+    [OutputType([string])]
     param (
         [Parameter(Mandatory=$true)][string]$username,
         [Parameter(Mandatory=$true)][SecureString]$password

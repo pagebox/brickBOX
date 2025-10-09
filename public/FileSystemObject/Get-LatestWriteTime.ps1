@@ -1,15 +1,18 @@
 function Get-LatestWriteTime {
     <#
     .SYNOPSIS
-        Returns a list of objects of given folder as input. Output contains information about the most latest written file within any subfolder.
+        Retrieves the latest write time of files in subfolders
     .COMPONENT
         FileSystemObject
+    .DESCRIPTION
+        This function retrieves the latest write time of files within a specified folder and its subfolders.
     .EXAMPLE
-        Get-LatestWriteTime '.'
+        PS> Get-LatestWriteTime '.'
     .EXAMPLE
-        Get-LatestWriteTime '.' | Sort-Object DaysAgo -Descending | Out-GridView -OutputMode Single | Select-Object -ExpandProperty Folder | Set-Clipboard
+        PS> Get-LatestWriteTime '.' | Sort-Object DaysAgo -Descending | Out-GridView -OutputMode Single | Select-Object -ExpandProperty Folder | Set-Clipboard
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Get-LatestWriteTime")]
+    [OutputType([PSCustomObject])]
     param (
         # path containing subfolders, which are looked for 
         [Parameter(Mandatory = $true,Position = 0,ValueFromPipeline = $true)][string]$path
@@ -37,6 +40,3 @@ function Get-LatestWriteTime {
         } 
     }
 }
-
-
-# $p.LastWriteTime = Get-Date('21.02.2024')

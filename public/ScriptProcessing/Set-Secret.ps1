@@ -5,17 +5,16 @@ function Set-Secret {
     .COMPONENT
         ScriptProcessing
     .DESCRIPTION
-        The function becomes handy, if you need eg. passwords or api-key in your script, but you don't want to save them in the script.
+        This function saves a secure string to the Windows registry under the HKCU hive. It can either take a plain text secret as input or prompt the user to enter it securely. 
+        The secret is stored in an encrypted format using PowerShell's ConvertFrom-SecureString cmdlet.
     .EXAMPLE
-        $password = Set-Secret 'myProject' 'SecretName' 'myPassword'
-        Saves the password in the registry as SecureString
+        PS> $password = Set-Secret 'myProject' 'SecretName' 'myPassword'
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Set-Secret")]
     param (
         [Parameter(Mandatory = $true)][string]$projectName,
         [Parameter(Mandatory = $true)][string]$Name,
-        [string]$Secret = $null,
-        [switch]$WhatIf = $false
+        [string]$Secret = $null
     )
     process {
         $regKey = "HKCU:\Software\pageBOX\Secret\$projectName"
@@ -26,7 +25,7 @@ function Set-Secret {
             $value = Read-Host "Please enter '$Name'" -AsSecureString
         }
 
-        if (!$WhatIf) {
+        if($PSCmdlet.ShouldProcess($Name, "Write secret to registry")){
             if (!(Test-Path $regKey)) { New-Item -Path $regKey -Force | Out-Null }
             New-ItemProperty -Path $regKey -Name $Name -Value ($value | ConvertFrom-SecureString) -PropertyType "String" -Force | Out-Null
         }

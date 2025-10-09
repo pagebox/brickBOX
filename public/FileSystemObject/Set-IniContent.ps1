@@ -1,13 +1,17 @@
 function Set-IniContent {
     <#
     .SYNOPSIS
-        Add or Update key-value pairs in ini-files
+        Adds or updates key-value pairs in ini-files.
     .COMPONENT
         FileSystemObject
+    .DESCRIPTION
+        This function adds or updates key-value pairs in ini-files.
     .EXAMPLE
-        $payload = Set-IniContent $payload 'color' 'red' 
-        sets the color=red in an ini-like content of $payload.
+        PS> $payload = Set-IniContent $payload 'color' 'red' 
+        # sets the color=red in an ini-like content of $payload.
     #>
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Set-IniContent")]
+    [OutputType([string])]
     param (
         [Parameter(mandatory=$true)][System.Array]$payload,
         [Parameter(mandatory=$true)][string]$key,
