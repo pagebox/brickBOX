@@ -1,7 +1,7 @@
 @{
 
-RootModule = 'brickBOX.psm1'   # Script module or binary module file associated with this manifest.
-ModuleVersion = '2.0.2'         # Version number of this module.
+RootModule = 'brickBOX.psm1'    # Script module or binary module file associated with this manifest.
+ModuleVersion = '2.1.0'         # Version number of this module.
 # CompatiblePSEditions = @()    # Supported PSEditions
 GUID = '9d038cf3-b469-4b78-a235-46488538ae7c'  # ID used to uniquely identify this module
 
@@ -26,23 +26,7 @@ PowerShellVersion = '7.0'       # Minimum version of the PowerShell engine requi
 # NestedModules = @()           # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @(
-    'Invoke-API',
-    'Get-BasicAuthForHeader',
-    'Format-Bytes',
-    'Set-IniContent',
-    'Get-LatestWriteTime',
-    'Convert-IPCalc',
-    'Test-Admin',
-    'ConvertFrom-Base64',
-    'ConvertTo-Base64',
-    'Start-Elevated',
-    'ConvertTo-Markdown',
-    'Set-RepeatingScheduledTask',
-    'Clear-Secret',
-    'Get-Secret',
-    'Set-Secret'
-)
+# FunctionsToExport = @() # Not needed, since all public functions exported by psm1.
 
 CmdletsToExport = @()           # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 VariablesToExport = '*'         # Variables to export from this module

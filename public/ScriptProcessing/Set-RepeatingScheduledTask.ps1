@@ -1,30 +1,31 @@
 function Set-RepeatingScheduledTask {
     <#
     .SYNOPSIS
-    Creates or ReCreates a Scheduled Task which executes a pwsh script as interval.
+        Creates or ReCreates a Scheduled Task which executes a pwsh script as interval.
     .COMPONENT
-    ScriptProcessing
+        ScriptProcessing
+    .DESCRIPTION
+        This function creates or recreates a Scheduled Task which executes a PowerShell script at a specified interval.
     .EXAMPLE
-    Set-RepeatingScheduledTask -ScriptFile (Get-Item '.\test.ps1') -User "$env:COMPUTERNAME\$env:USERNAME" -Password (Get-Secret 'localWS' $env:USERNAME)
+        PS> Set-RepeatingScheduledTask -ScriptFile (Get-Item '.\test.ps1') -User "$env:COMPUTERNAME\$env:USERNAME" -Password (Get-Secret 'localWS' $env:USERNAME)
     .EXAMPLE
-    $params = @{
-        ScriptFile = Get-Item '.\test.ps1'
-        ScriptParam = '-ALL'
-        User = "$env:COMPUTERNAME\$env:USERNAME"
-        Password = Get-Secret 'localWS' $env:USERNAME
-        TaskName = 'test script'
-        TaskPath = "\page\"
-        RepetitionInterval = (New-TimeSpan -Hours 12)
-    }
-    
-    Set-RepeatingScheduledTask @params
+        PS> $params = @{
+            ScriptFile = Get-Item '.\test.ps1'
+            ScriptParam = '-ALL'
+            User = "$env:COMPUTERNAME\$env:USERNAME"
+            Password = Get-Secret 'localWS' $env:USERNAME
+            TaskName = 'test script'
+            TaskPath = "\page\"
+            RepetitionInterval = (New-TimeSpan -Hours 12)
+        }
+        Set-RepeatingScheduledTask @params
     
     .NOTES
-    The user needs following right: 
-    Administrative Tools -> Local Security Policy -> Local Policies -> User Rights Assignment -> Log on as a batch job
-    …but admin priviledges are also sufficient…
+        The user needs following right: 
+        Administrative Tools -> Local Security Policy -> Local Policies -> User Rights Assignment -> Log on as a batch job
+        …but admin privileges are also sufficient…
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Set-RepeatingScheduledTask")]
     param (
         # FileSystemInfo of the Scriptfile which should be executed
         [Parameter(mandatory=$true)][System.IO.FileSystemInfo]$ScriptFile,

@@ -5,12 +5,11 @@ function Get-Secret {
     .COMPONENT
         ScriptProcessing
     .DESCRIPTION
-        The function becomes handy, if you need eg. passwords or api-key in your script, but you don't want to save them in the script.
+        This function retrieves a secure string from the Windows registry under the HKCU hive.
     .EXAMPLE
-        $password = Get-Secret 'myProject' 'myPassword'
-        Gets the password earlier saved from the registry and sets $password as SecureString
+        PS> $password = Get-Secret 'myProject' 'myPassword'
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $false, HelpUri="https://github.com/pagebox/brickBOX/wiki/Get-Secret")]
     param (
         [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
         [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Name,

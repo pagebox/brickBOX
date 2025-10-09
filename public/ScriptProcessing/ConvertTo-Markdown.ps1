@@ -4,25 +4,25 @@ Function ConvertTo-Markdown {
         Converts a PowerShell object to a Markdown table.
     .COMPONENT
         ScriptProcessing
+    .DESCRIPTION
+        This function converts a PowerShell object to a Markdown table format.
     .EXAMPLE
-        Get-Process | Where-Object {$_.mainWindowTitle} | Select-Object ID, Name, Path, Company | ConvertTo-Markdown
+        PS> Get-Process | Where-Object {$_.mainWindowTitle} | Select-Object ID, Name, Path, Company | ConvertTo-Markdown
      
         This command gets all the processes that have a main window title, and it displays them in a Markdown table format with the process ID, Name, Path and Company.
     .EXAMPLE
-        ConvertTo-Markdown (Get-Date)
-     
-        This command converts a date object to Markdown table format
-    .EXAMPLE
-        Get-Alias | Select Name, DisplayName | ConvertTo-Markdown
-     
-        This command displays the name and displayname of all the aliases for the current session in Markdown table format
+        PS> ConvertTo-Markdown (Get-Date | Select-Object Date,DayOfYear,Ticks)
+
+        Date                | DayOfYear | Ticks
+        ------------------- | --------: | ------------------
+        10/09/2025 00:00:00 |       282 | 638956442322968141
     .NOTES
         Inspired by https://www.powershellgallery.com/packages/PSMarkdown/1.1
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $false, HelpUri="https://github.com/pagebox/brickBOX/wiki/ConvertTo-Markdown")]
     [OutputType([string])]
     Param (
-        [Parameter(Mandatory = $true,Position = 0,ValueFromPipeline = $true)][PSObject[]]$InputObject
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline)][PSObject[]]$InputObject
     )
     Begin {
         $items = @() 

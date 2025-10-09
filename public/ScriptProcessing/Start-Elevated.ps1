@@ -4,11 +4,14 @@ function Start-Elevated {
         Executes a PowerShell script or command with elevated rights
     .COMPONENT
         ScriptProcessing
+    .DESCRIPTION
+        This function executes a PowerShell script or command with elevated rights.
     .EXAMPLE
-        Start-Elevated notepad.exe
+        PS> Start-Elevated 'notepad.exe'
+        
         Runs notepad as administrator
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Start-Elevated")]
     param(
         [Parameter(Mandatory)][string]$Command,
         [switch]$NoExit 

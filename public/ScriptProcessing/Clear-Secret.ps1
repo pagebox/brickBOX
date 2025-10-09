@@ -4,16 +4,18 @@ function Clear-Secret {
         Removes secure strings from hkcu.
     .COMPONENT
         ScriptProcessing
+    .DESCRIPTION
+        This function removes secure strings from the Windows registry under the HKCU hive.
     .EXAMPLE
-        Clear-Secret 'myProject' 'myPassword'
-        Removes the 'myPassword' secret form the registry
+        PS> Clear-Secret 'myProject' 'myPassword'
+        # Removes the 'myPassword' secret form the registry
     .EXAMPLE
-        Clear-Secret 'myProject'
-        Removes the whole project 'myProject' with all its secret form the registry
+        PS> Clear-Secret 'myProject'
+        # Removes the whole project 'myProject' with all its secret form the registry
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, HelpUri="https://github.com/pagebox/brickBOX/wiki/Clear-Secret")]
     param (
-        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$projectName,
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$projectName,
         [string]$Name = ''
     )
     process {

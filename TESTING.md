@@ -15,9 +15,8 @@ Install-Module Pester -Force -Scope AllUsers
 ## Publishing preparation
 
 - copy the function-markdown-table to `README.md`
-- update `brickBOX.psd1`
+- edit `brickBOX.psd1`
   - update `ModuleVersion`
-  - update `FunctionsToExport`
 - complete pull request
 - Upload Module to PowerShell Gallery
 
